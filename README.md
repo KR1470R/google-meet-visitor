@@ -1,2 +1,2 @@
 # lection-passer
-Passes lections on Google Meet via Celenium webdriver.
+ Passive agent of Google Meet that visits calls without interaction with Google Meet with user.
