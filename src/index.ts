@@ -1,6 +1,7 @@
 import { Builder, By, WebDriver, Key } from "selenium-webdriver";
 import chrome from "selenium-webdriver/chrome";
 import { Options } from "selenium-webdriver/chrome";
+import Config from "./Config";
 
 class CustomOptions extends Options {
   constructor() {
@@ -58,7 +59,7 @@ class Visitor {
 }
 
 async function main() {
-  const visitor = new Visitor("");
+  const visitor = new Visitor(Config.get_param("TARGET_CALL_LINK"));
   await visitor.init();
 }
 
