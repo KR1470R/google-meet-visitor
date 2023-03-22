@@ -1,6 +1,5 @@
 import process from "process";
 import dotenv from "dotenv";
-import Logger from "./Logger";
 import { Events } from "./Util";
 
 dotenv.config();
@@ -12,13 +11,11 @@ export default class Config {
     if (process?.env?.[key]) {
       const target_value = process.env[key]!;
       if (!target_value.length) {
-        Logger.printError(`ConfigError: Key ${key} was not specified!`);
-        Events.emit("on_exit", 1);
+        Events.emit("on_exit", `ConfigError: Key ${key} was not specified!`);
       }
       return process.env[key]!;
     }
-    Logger.printError(`ConfigError: Uknown key: ${key}`);
-    Events.emit("on_exit", 1);
-    return "";
+    Events.emit("on_exit", `ConfigError: Key was not specified: ${key}`);
+    process.exit(1);
   }
 }

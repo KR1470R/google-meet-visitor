@@ -16,7 +16,7 @@ export default class Visitor {
   constructor(target_url: string) {
     this.target_url = target_url;
 
-    Events.on("on_exit", (exitCode: number) => this.shutdown(exitCode));
+    Events.on("on_exit", (error: string) => this.shutdown(error));
   }
 
   public async init() {
@@ -49,7 +49,7 @@ export default class Visitor {
     Logger.printHeader("[join]");
     await (
       await this.parser.getElementByInnerText("button", "Join now")
-    ).click();
+    )?.click();
   }
 
   private async disableMediaDevices() {
@@ -102,7 +102,7 @@ export default class Visitor {
     await this.driver.sleep(2000);
 
     Logger.printInfo("next...");
-    await (await this.parser.getElementByInnerText("button", "Next")).click();
+    await (await this.parser.getElementByInnerText("button", "Next"))?.click();
 
     await this.driver.sleep(3000);
 
@@ -117,7 +117,7 @@ export default class Visitor {
     await this.driver.sleep(2000);
 
     Logger.printInfo("next...");
-    await (await this.parser.getElementByInnerText("button", "Next")).click();
+    await (await this.parser.getElementByInnerText("button", "Next"))?.click();
 
     await this.driver.sleep(3000);
   }
@@ -133,7 +133,12 @@ export default class Visitor {
     }
   }
 
-  public async shutdown(exitCode = 0) {
+  public async shutdown(error?: string) {
+    let exitCode = 0;
+    if (error) {
+      Logger.printError(error);
+      exitCode = 1;
+    }
     Logger.printHeader("[shutdown]");
     await this.driver.quit();
     process.exit(exitCode);

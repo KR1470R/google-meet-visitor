@@ -1,4 +1,6 @@
 import { Options } from "selenium-webdriver/chrome";
+import Config from "./Config";
+import Logger from "./Logger";
 
 export default class CustomOptions extends Options {
   constructor() {
@@ -22,6 +24,9 @@ export default class CustomOptions extends Options {
       "--user-data-dir=/home/kript/.config/google-chrome/Default",
       `--profile-directory=Default`,
     ]);
-    // this.headless();
+    if (Config.get_param("HEADLESS") === "true") {
+      Logger.printInfo("running browser in background...");
+      this.headless();
+    } else Logger.printInfo("running browser in foreground");
   }
 }
