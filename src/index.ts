@@ -3,6 +3,7 @@ import Config from "./Config";
 import { exec } from "child_process";
 
 async function main() {
+  // @TODO Remove this and make exit from session properly
   // killing all google chrome instances
   exec("pkill -9 -f google-chrome");
 

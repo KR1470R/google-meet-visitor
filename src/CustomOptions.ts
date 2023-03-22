@@ -28,5 +28,9 @@ export default class CustomOptions extends Options {
       Logger.printInfo("running browser in background...");
       this.headless();
     } else Logger.printInfo("running browser in foreground");
+    if (Config.get_param("MUTE") === "true") {
+      Logger.printInfo("muted audio");
+      this.addArguments("--mute-audio");
+    }
   }
 }
