@@ -1,4 +1,4 @@
-import { Builder, By, WebDriver, Key } from "selenium-webdriver";
+import { Builder, WebDriver, Key } from "selenium-webdriver";
 import chrome from "selenium-webdriver/chrome";
 import Config from "./Config";
 import { Events } from "./Util";
@@ -75,58 +75,69 @@ export default class Visitor {
   }
 
   public async signIn() {
-    Logger.printHeader("[signIn]");
+    try {
+      Logger.printHeader("[signIn]");
 
-    await this.driver.get(
-      "https://accounts.google.com/v3/signin/identifier?dsh=S-905947906%3A1679435695399874&authuser=0&continue=https%3A%2F%2Fmyaccount.google.com%2F%3Futm_source%3Dsign_in_no_continue&ec=GAlAwAE&hl=en&service=accountsettings&flowName=GlifWebSignIn&flowEntry=AddSession"
-    );
+      await this.driver.get(
+        "https://accounts.google.com/v3/signin/identifier?dsh=S-905947906%3A1679435695399874&authuser=0&continue=https%3A%2F%2Fmyaccount.google.com%2F%3Futm_source%3Dsign_in_no_continue&ec=GAlAwAE&hl=en&service=accountsettings&flowName=GlifWebSignIn&flowEntry=AddSession"
+      );
 
-    // await (
-    //   await Parser.getElementByInnerText(
-    //     this.driver,
-    //     "div[role=button]",
-    //     "Sign in"
-    //   )
-    // ).click();
+      // await (
+      //   await Parser.getElementByInnerText(
+      //     this.driver,
+      //     "div[role=button]",
+      //     "Sign in"
+      //   )
+      // ).click();
 
-    await this.driver.sleep(2000);
+      await this.driver.sleep(2000);
 
-    Logger.printInfo("working with input email...");
-    const input_email = await this.driver.findElement(
-      By.css("input[type=email]")
-    );
+      Logger.printInfo("working with input email...");
+      const input_email = await this.parser.getElementByTagName(
+        "input[type=email]"
+      );
 
-    const user_email = Config.get_param("USER_EMAIL");
-    await this.parser.humanTypeInput(input_email, user_email);
+      const user_email = Config.get_param("USER_EMAIL");
+      await this.parser.humanTypeInput(input_email, user_email);
 
-    await this.driver.sleep(2000);
+      await this.driver.sleep(2000);
 
-    Logger.printInfo("next...");
-    await (await this.parser.getElementByInnerText("button", "Next"))?.click();
+      Logger.printInfo("next...");
+      await (
+        await this.parser.getElementByInnerText("button", "Next")
+      )?.click();
 
-    await this.driver.sleep(3000);
+      await this.driver.sleep(3000);
 
-    Logger.printInfo("working with input password...");
-    const input_password = await this.driver.findElement(
-      By.css("input[type=password]")
-    );
+      Logger.printInfo("working with input password...");
+      const input_password = await this.parser.getElementByTagName(
+        "input[type=password]"
+      );
 
-    const user_password = Config.get_param("USER_PASSWORD");
-    await this.parser.humanTypeInput(input_password, user_password);
+      const user_password = Config.get_param("USER_PASSWORD");
+      await this.parser.humanTypeInput(input_password, user_password);
 
-    await this.driver.sleep(2000);
+      await this.driver.sleep(2000);
 
-    Logger.printInfo("next...");
-    await (await this.parser.getElementByInnerText("button", "Next"))?.click();
+      Logger.printInfo("next...");
+      await (
+        await this.parser.getElementByInnerText("button", "Next")
+      )?.click();
 
-    await this.driver.sleep(3000);
+      await this.driver.sleep(3000);
+    } catch (err) {
+      this.shutdown((err as Error).message);
+      await this.driver.sleep(3000);
+    }
   }
 
   public async chooseFirstAccount() {
     Logger.printHeader("[chooseFirstAccount]");
     try {
       await this.driver.sleep(2000);
-      await this.parser.getElementByTagName("div[data-authuser]").click();
+      await (
+        await this.parser.getElementByTagName("div[data-authuser]")
+      ).click();
     } catch (err) {
       Logger.printWarning((err as Error).message);
       return Promise.resolve();
