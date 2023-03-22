@@ -17,7 +17,7 @@ export default class Parser {
       if ((await button.getText()) === text) return button;
     }
 
-    Events.emit(
+    Events.emitCheckable(
       "on_exit",
       `ParserError: Element <${name}> with text "${text}" not found!`
     );

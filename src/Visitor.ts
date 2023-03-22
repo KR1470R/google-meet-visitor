@@ -16,7 +16,7 @@ export default class Visitor {
   constructor(target_url: string) {
     this.target_url = target_url;
 
-    Events.on("on_exit", (error: string) => this.shutdown(error));
+    Events.on("on_exit", (error?: string) => this.shutdown(error));
   }
 
   public async init() {
