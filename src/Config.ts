@@ -11,11 +11,17 @@ export default class Config {
     if (process?.env?.[key]) {
       const target_value = process.env[key]!;
       if (!target_value.length) {
-        Events.emit("on_exit", `ConfigError: Key ${key} was not specified!`);
+        Events.emitCheckable(
+          "on_exit",
+          `ConfigError: Key ${key} was not specified!`
+        );
       }
       return process.env[key]!;
     }
-    Events.emit("on_exit", `ConfigError: Key was not specified: ${key}`);
+    Events.emitCheckable(
+      "on_exit",
+      `ConfigError: Key was not specified: ${key}`
+    );
     process.exit(1);
   }
 }

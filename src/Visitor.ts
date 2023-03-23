@@ -16,7 +16,7 @@ export default class Visitor {
   constructor(target_url: string) {
     this.target_url = target_url;
 
-    Events.on("on_exit", (error: string) => this.shutdown(error));
+    Events.on("on_exit", (error?: string) => this.shutdown(error));
   }
 
   public async init() {
@@ -109,7 +109,9 @@ export default class Visitor {
     Logger.printHeader("[chooseFirstAccount]");
     try {
       await this.driver.sleep(2000);
-      await this.parser.getElementByTagName("div[data-authuser]").click();
+      await (
+        await this.parser.getElementByTagName("div[data-authuser]")
+      ).click();
     } catch (err) {
       Logger.printWarning((err as Error).message);
       return Promise.resolve();

@@ -1,4 +1,4 @@
-import EventEmmiter from "events";
+import EventEmitterExtended from "./Events";
 
 export function getRandomInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min) + min + 1);
@@ -22,7 +22,7 @@ export function concat(str: string[]) {
   return res;
 }
 
-export const Events = new EventEmmiter();
+export const Events = new EventEmitterExtended();
 
 export function minutesToMs(minutes: number) {
   return minutes * 60 * 1000;

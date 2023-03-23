@@ -4,8 +4,10 @@ import { getRandomInt, Events } from "./Util";
 export default class Parser {
   constructor(private driver: WebDriver) {}
 
-  public getElementByTagName(name: string) {
-    return this.driver.findElement(By.css(name));
+  public async getElementByTagName(name: string) {
+    const found = await this.driver.findElements(By.css(name));
+    if (found.length) return found[0];
+    throw new Error(`Element ${name} not found!`);
   }
 
   public async getElementByInnerText(
@@ -17,7 +19,7 @@ export default class Parser {
       if ((await button.getText()) === text) return button;
     }
 
-    Events.emit(
+    Events.emitCheckable(
       "on_exit",
       `ParserError: Element <${name}> with text "${text}" not found!`
     );
