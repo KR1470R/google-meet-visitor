@@ -1,6 +1,7 @@
 import { Options } from "selenium-webdriver/chrome";
 import Config from "./Config";
 import Logger from "./Logger";
+import { parseUserDir } from "./Util";
 
 export default class CustomOptions extends Options {
   constructor() {
@@ -19,11 +20,15 @@ export default class CustomOptions extends Options {
       // "--disable-blink-features=AutomationControlled",
       // "--disable-web-security",
       // "--allow-running-insecure-content",
-      // "--profile-directory=Default",
-      "--remote-debugging-port=9292",
-      "--user-data-dir=/home/kript/.config/google-chrome/Default",
-      `--profile-directory=Default`,
     ]);
+
+    const user_data_dir_path = Config.get_param("USER_DATA_DIR");
+    if (user_data_dir_path) {
+      const user_dir_data = parseUserDir(user_data_dir_path);
+      this.addArguments(`--user-data-dir=${user_dir_data.dir_path}`);
+      this.addArguments(`--profile-directory=${user_dir_data.profile_name}`);
+    }
+
     if (Config.get_param("HEADLESS") === "true") {
       Logger.printInfo("running browser in background...");
       this.headless();

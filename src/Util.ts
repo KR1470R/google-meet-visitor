@@ -23,3 +23,24 @@ export function concat(str: string[]) {
 }
 
 export const Events = new EventEmmiter();
+
+export function minutesToMs(minutes: number) {
+  return minutes * 60 * 1000;
+}
+
+export function timer(ms: number) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+type USER_DIR_DATA = {
+  dir_path: string;
+  profile_name: string;
+};
+export function parseUserDir(full_path: string): USER_DIR_DATA {
+  const full_path_splitted = full_path.split("/");
+  const dir_path = full_path_splitted.slice(0, full_path.length - 1).join("/");
+  const profile_name = full_path_splitted.at(-1) as string;
+  return { dir_path, profile_name };
+}
