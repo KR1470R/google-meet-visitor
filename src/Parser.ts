@@ -1,13 +1,16 @@
-import { By, WebDriver, WebElement } from "selenium-webdriver";
+import { By, until, WebDriver, WebElement } from "selenium-webdriver";
 import { getRandomInt, Events } from "./Util";
 
 export default class Parser {
   constructor(private driver: WebDriver) {}
 
-  public async getElementByTagName(name: string) {
+  public async getElementByTagName(
+    name: string
+  ): Promise<WebElement | undefined> {
     const found = await this.driver.findElements(By.css(name));
     if (found.length) return found[0];
-    throw new Error(`Element ${name} not found!`);
+    Events.emitCheckable("on_exit", `ParserError: Element ${name} not found!`);
+    return Promise.resolve(undefined);
   }
 
   public async getElementByInnerText(
@@ -40,5 +43,13 @@ export default class Parser {
       await this.driver.sleep(getRandomInt(0, 600));
       await input.sendKeys(char);
     }
+  }
+
+  public async waitFor(xpath: string, timeout: number) {
+    const target_el = await this.driver.wait(
+      until.elementLocated(By.xpath(xpath)),
+      timeout
+    );
+    return target_el as unknown as WebElement;
   }
 }

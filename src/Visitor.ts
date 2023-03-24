@@ -1,7 +1,7 @@
 import { Builder, WebDriver, Key } from "selenium-webdriver";
 import chrome from "selenium-webdriver/chrome";
 import Config from "./Config";
-import { Events, getRandomInt, minutesToMs, timer } from "./Util";
+import { Events, minutesToMs, timer } from "./Util";
 import Logger from "./Logger";
 import CustomOptions from "./CustomOptions";
 import Parser from "./Parser";
@@ -42,12 +42,12 @@ export default class Visitor {
     await this.join();
     await this.driver.sleep(2000);
     await this.stayAtCallWhile();
+    await this.driver.sleep(1000);
+    Events.emitCheckable("on_exit");
   }
 
   public async stayAtCallWhile() {
-    Logger.printHeader("[stayAtCallWhile]");
-
-    const minutes = parseInt(Config.get_param("CALL_TIMER"));
+    const minutes = parseInt(Config.get_param("CALL_TIMER_MINUTES"));
     if (Number.isNaN(minutes)) {
       Events.emit(
         "on_exit",
@@ -55,25 +55,40 @@ export default class Visitor {
       );
     }
 
+    Logger.printHeader("[stayAtCallWhile]", `${minutes} minutes`);
+
     let ms = minutesToMs(minutes);
     const timer_offset_ms = 1000;
+    const timer_for_stay_call = 1200000;
 
-    const leave_button = await this.parser.getElementByInnerText(
-      "button[role=button]",
-      "call_check"
+    let leave_button = await this.parser.getElementByTagName(
+      "button[aria-label='Leave call'][role=button]"
     );
 
     while (ms >= 0) {
-      await timer(timer_offset_ms);
-      ms -= timer_offset_ms;
-      await this.driver
-        .actions()
-        .move({
-          duration: getRandomInt(100, 600),
-          origin: leave_button,
-        })
-        .perform();
+      if (ms >= timer_for_stay_call) {
+        Logger.printWarning("waiting for 'stay in the call' button...");
+        const timer_start = performance.now();
+        const target_el = await this.parser.waitFor(
+          "//*[contains(text(), 'Stay in the call')]/parent::button",
+          timer_for_stay_call
+        );
+        const timer_end = performance.now();
+        console.log(`button appeared after ${timer_end - timer_start} ms`);
+        await this.driver.sleep(2000);
+        await target_el.click();
+        ms -= timer_end - timer_start;
+      } else {
+        await timer(timer_offset_ms);
+        ms -= timer_offset_ms;
+      }
     }
+
+    Logger.printInfo("done. leaving...");
+    leave_button = await this.parser.getElementByTagName(
+      "button[aria-label='Leave call'][role=button]"
+    );
+    leave_button?.click();
   }
 
   private async join() {
@@ -109,9 +124,10 @@ export default class Visitor {
     Logger.printHeader("[chooseFirstAccount]");
     try {
       await this.driver.sleep(2000);
-      await (
-        await this.parser.getElementByTagName("div[data-authuser]")
-      ).click();
+      const account_button = await this.parser.getElementByTagName(
+        "div[data-authuser]"
+      );
+      if (account_button) await account_button.click();
     } catch (err) {
       Logger.printWarning((err as Error).message);
       return Promise.resolve();

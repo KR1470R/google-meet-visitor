@@ -12,6 +12,6 @@ export default class EventEmitterExtended extends EventEmitter {
     if (!this.listenerCount(event_name)) {
       if (content) Logger.printError(content);
       process.exit(1);
-    } else this.emit(event_name);
+    } else this.emit(event_name, content);
   }
 }

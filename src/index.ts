@@ -7,6 +7,8 @@ async function main() {
   // killing all google chrome instances
   exec("pkill -9 -f google-chrome");
 
+  Config.init();
+
   const target_link = Config.get_param("TARGET_CALL_LINK");
   const visitor = new Visitor(target_link);
   await visitor.init();
