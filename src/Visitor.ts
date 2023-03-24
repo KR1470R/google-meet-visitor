@@ -61,10 +61,6 @@ export default class Visitor {
     const timer_offset_ms = 1000;
     const timer_for_stay_call = 1200000;
 
-    let leave_button = await this.parser.getElementByTagName(
-      "button[aria-label='Leave call'][role=button]"
-    );
-
     while (ms >= 0) {
       if (ms >= timer_for_stay_call) {
         Logger.printWarning("waiting for 'stay in the call' button...");
@@ -85,10 +81,11 @@ export default class Visitor {
     }
 
     Logger.printInfo("done. leaving...");
-    leave_button = await this.parser.getElementByTagName(
+    const leave_button = await this.parser.getElementByTagName(
       "button[aria-label='Leave call'][role=button]"
     );
-    leave_button?.click();
+    await this.driver.sleep(2000);
+    await leave_button?.click();
   }
 
   private async join() {
