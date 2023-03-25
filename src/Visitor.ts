@@ -27,11 +27,13 @@ export default class Visitor {
       .setChromeService(this.service)
       .setChromeOptions(this.options)
       .build();
+    if (Config.get_param("MINIMIZED") === "true")
+      await this.driver.manage().window().minimize();
+
     this.parser = new Parser(this.driver);
 
     await this.start_call();
     Logger.printSuccess("successfully!");
-    // await this.driver.manage().deleteAllCookies();
   }
 
   public async start_call() {
@@ -39,6 +41,7 @@ export default class Visitor {
     await this.driver.sleep(2000);
     await this.driver.get(this.target_url);
     await this.disableMediaDevices();
+    await this.driver.sleep(2000);
     await this.join();
     await this.driver.sleep(2000);
     await this.stayAtCallWhile();
@@ -67,12 +70,13 @@ export default class Visitor {
         const timer_start = performance.now();
         const target_el = await this.parser.waitFor(
           "//*[contains(text(), 'Stay in the call')]/parent::button",
-          timer_for_stay_call
+          timer_for_stay_call,
+          true
         );
         const timer_end = performance.now();
-        console.log(`button appeared after ${timer_end - timer_start} ms`);
+        Logger.printInfo(`button appeared after ${timer_end - timer_start} ms`);
         await this.driver.sleep(2000);
-        await target_el.click();
+        await target_el?.click();
         ms -= timer_end - timer_start;
       } else {
         await timer(timer_offset_ms);
@@ -90,9 +94,24 @@ export default class Visitor {
 
   private async join() {
     Logger.printHeader("[join]");
-    await (
-      await this.parser.getElementByInnerText("button", "Join now")
-    )?.click();
+    const ask_to_join = await this.parser.waitFor(
+      "//*[contains(text(), 'Ask to join')]/parent::button",
+      120000,
+      false
+    );
+
+    if (ask_to_join) {
+      Events.emit("on_exit", "You cannot join this call due need to ask.");
+      this.driver.sleep(2000);
+    } else {
+      const button_join = await this.parser.waitFor(
+        "//*[contains(text(), 'Join now')]/parent::button",
+        300000,
+        true
+      );
+      await this.driver.sleep(2000);
+      await button_join?.click();
+    }
   }
 
   private async disableMediaDevices() {

@@ -11,13 +11,14 @@ export default class CustomOptions extends Options {
       // "--no-sandbox",
       // "--disable-gpu",
       // "--disable-infobars",
-      // "--disable-extensions",
+      "--disable-extensions",
       // "--disable-setuid-sandbox",
       "--use-fake-ui-for-media-stream",
+      "--disable-notifications",
       // "--disable-browser-side-navigation",
       // "--use-fake-device-for-media-stream",
       // "--disable-features=site-per-process",
-      // "--disable-blink-features=AutomationControlled",
+      "--disable-blink-features=AutomationControlled",
       // "--disable-web-security",
       // "--allow-running-insecure-content",
     ]);
@@ -29,10 +30,11 @@ export default class CustomOptions extends Options {
       this.addArguments(`--profile-directory=${user_dir_data.profile_name}`);
     }
 
-    if (Config.get_param("HEADLESS") === "true") {
+    if (Config.get_param("MINIMIZED") === "true") {
       Logger.printInfo("running browser in background...");
-      this.headless();
+      this.addArguments("--start-minimized");
     } else Logger.printInfo("running browser in foreground");
+
     if (Config.get_param("MUTE") === "true") {
       Logger.printInfo("muted audio");
       this.addArguments("--mute-audio");

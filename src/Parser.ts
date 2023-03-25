@@ -45,11 +45,21 @@ export default class Parser {
     }
   }
 
-  public async waitFor(xpath: string, timeout: number) {
-    const target_el = await this.driver.wait(
-      until.elementLocated(By.xpath(xpath)),
-      timeout
-    );
-    return target_el as unknown as WebElement;
+  public async waitFor(xpath: string, timeout: number, throwable: boolean) {
+    try {
+      const target_el = await this.driver.wait(
+        until.elementLocated(By.xpath(xpath)),
+        timeout
+      );
+      return target_el;
+    } catch (err) {
+      if (throwable) {
+        Events.emitCheckable(
+          "on_exit",
+          `ParserError: Timeot of waiting for element '${xpath}'!`
+        );
+      }
+      return Promise.resolve(undefined);
+    }
   }
 }

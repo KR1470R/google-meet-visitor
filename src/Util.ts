@@ -40,7 +40,11 @@ type USER_DIR_DATA = {
 };
 export function parseUserDir(full_path: string): USER_DIR_DATA {
   const full_path_splitted = full_path.split("/");
-  const dir_path = full_path_splitted.slice(0, full_path.length - 1).join("/");
+
+  const dir_path = full_path_splitted
+    .slice(0, full_path_splitted.length - 1)
+    .join("/");
   const profile_name = full_path_splitted.at(-1) as string;
+
   return { dir_path, profile_name };
 }
