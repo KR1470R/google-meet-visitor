@@ -1,7 +1,7 @@
 {
   "name": "google-meet-visitor",
   "version": "2.0.04",
-  "description": "Passive agent of Google Meet that visits calls without interaction with Google Meet with user.",
+  "description": "Passive agent of Google Meet that visits calls without interaction with Google Meet by user.",
   "main": "index.js",
   "scripts": {
     "run": "rm -rf ./dist ; tsc -p tsconfig.json && node ./dist/src/index.js"
