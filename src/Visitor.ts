@@ -1,7 +1,7 @@
 import { Builder, WebDriver, Key } from "selenium-webdriver";
 import chrome from "selenium-webdriver/chrome";
 import Config from "./Config";
-import { Events, minutesToMs, timer } from "./Util";
+import { Events, minutesToMs, timer, predictFinishDate } from "./Util";
 import Logger from "./Logger";
 import CustomOptions from "./CustomOptions";
 import Parser from "./Parser";
@@ -27,6 +27,12 @@ export default class Visitor {
       .setChromeService(this.service)
       .setChromeOptions(this.options)
       .build();
+
+    await this.driver.manage().window().setRect({
+      width: 1920,
+      height: 1080,
+    });
+
     if (Config.get_param("MINIMIZED") === "true")
       await this.driver.manage().window().minimize();
 
@@ -58,25 +64,28 @@ export default class Visitor {
       );
     }
 
-    Logger.printHeader("[stayAtCallWhile]", `${minutes} minutes`);
+    Logger.printHeader(
+      "[stayAtCallWhile]",
+      `${predictFinishDate(minutesToMs(minutes))}(${minutes} minutes)`
+    );
 
     let ms = minutesToMs(minutes);
     const timer_offset_ms = 1000;
-    const timer_for_stay_call = 1200000;
+    const timer_for_stay_call = 60000;
 
     while (ms >= 0) {
       if (ms >= timer_for_stay_call) {
-        Logger.printWarning("waiting for 'stay in the call' button...");
         const timer_start = performance.now();
         const target_el = await this.parser.waitFor(
           "//*[contains(text(), 'Stay in the call')]/parent::button",
           timer_for_stay_call,
-          true
+          false
         );
+        if (target_el) {
+          await this.driver.sleep(2000);
+          await target_el?.click();
+        }
         const timer_end = performance.now();
-        Logger.printInfo(`button appeared after ${timer_end - timer_start} ms`);
-        await this.driver.sleep(2000);
-        await target_el?.click();
         ms -= timer_end - timer_start;
       } else {
         await timer(timer_offset_ms);
@@ -94,23 +103,31 @@ export default class Visitor {
 
   private async join() {
     Logger.printHeader("[join]");
-    const ask_to_join = await this.parser.waitFor(
-      "//*[contains(text(), 'Ask to join')]/parent::button",
-      120000,
+
+    const button_join = await this.parser.waitFor(
+      "//*[contains(text(), 'Join now')]/parent::button",
+      60000,
       false
     );
 
-    if (ask_to_join) {
-      Events.emit("on_exit", "You cannot join this call due need to ask.");
-      this.driver.sleep(2000);
-    } else {
-      const button_join = await this.parser.waitFor(
-        "//*[contains(text(), 'Join now')]/parent::button",
-        300000,
-        true
-      );
+    if (button_join) {
       await this.driver.sleep(2000);
       await button_join?.click();
+      Logger.printInfo("joined!");
+    } else {
+      Logger.printError("Couldn't find join button!");
+      Logger.printWarning("checking is user has permissions to join...");
+      const ask_to_join = await this.parser.waitFor(
+        "//*[contains(text(), 'Ask to join')]/parent::button",
+        2000,
+        false
+      );
+
+      if (ask_to_join)
+        Events.emit("on_exit", "You cannot join this call due need to ask.");
+      else Events.emit("on_exit", "Uknown error to join this call");
+
+      this.driver.sleep(2000);
     }
   }
 

@@ -21,6 +21,7 @@ export default class CustomOptions extends Options {
       "--disable-blink-features=AutomationControlled",
       // "--disable-web-security",
       // "--allow-running-insecure-content",
+      // "--window-size=1920,1080",
     ]);
 
     const user_data_dir_path = Config.get_param("USER_DATA_DIR");
@@ -32,7 +33,6 @@ export default class CustomOptions extends Options {
 
     if (Config.get_param("MINIMIZED") === "true") {
       Logger.printInfo("running browser in background...");
-      this.addArguments("--start-minimized");
     } else Logger.printInfo("running browser in foreground");
 
     if (Config.get_param("MUTE") === "true") {

@@ -7,10 +7,16 @@ export default class Parser {
   public async getElementByTagName(
     name: string
   ): Promise<WebElement | undefined> {
-    const found = await this.driver.findElements(By.css(name));
-    if (found.length) return found[0];
-    Events.emitCheckable("on_exit", `ParserError: Element ${name} not found!`);
-    return Promise.resolve(undefined);
+    try {
+      const found = await this.driver.findElement(By.css(name));
+      return found;
+    } catch (err) {
+      Events.emitCheckable(
+        "on_exit",
+        `ParserError: Element ${name} not found!`
+      );
+      return Promise.resolve(undefined);
+    }
   }
 
   public async getElementByInnerText(

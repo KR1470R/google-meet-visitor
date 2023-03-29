@@ -38,6 +38,7 @@ type USER_DIR_DATA = {
   dir_path: string;
   profile_name: string;
 };
+
 export function parseUserDir(full_path: string): USER_DIR_DATA {
   const full_path_splitted = full_path.split("/");
 
@@ -47,4 +48,13 @@ export function parseUserDir(full_path: string): USER_DIR_DATA {
   const profile_name = full_path_splitted.at(-1) as string;
 
   return { dir_path, profile_name };
+}
+
+export function getDateString(date = new Date()) {
+  return `[${date.toLocaleString()}]`;
+}
+
+export function predictFinishDate(remain_ms: number) {
+  const date_now = new Date();
+  return getDateString(new Date(date_now.getTime() + remain_ms));
 }
