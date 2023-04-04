@@ -31,11 +31,11 @@ export default class CustomOptions extends Options {
       this.addArguments(`--profile-directory=${user_dir_data.profile_name}`);
     }
 
-    if (Config.get_param("MINIMIZED") === "true") {
+    if (Config.get_param("MINIMIZED", false) === "true") {
       Logger.printInfo("running browser in background...");
     } else Logger.printInfo("running browser in foreground");
 
-    if (Config.get_param("MUTE") === "true") {
+    if (Config.get_param("MUTE", false) === "true") {
       Logger.printInfo("muted audio");
       this.addArguments("--mute-audio");
     }

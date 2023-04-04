@@ -1,19 +1,10 @@
 import EventEmitterExtended from "./Events";
+import { USER_DIR_DATA } from "./Models";
+import fs from "node:fs";
+import path from "node:path";
 
 export function getRandomInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min) + min + 1);
-}
-
-export enum COLORS {
-  HEADER = "\x1b[95m",
-  OKBLUE = "\x1b[94m",
-  OKCYAN = "\x1b[96m",
-  OKGREEN = "\x1b[92m",
-  WARNING = "\x1b[93m",
-  FAIL = "\x1b[91m",
-  ENDC = "\x1b[0m",
-  BOLD = "\x1b[1m",
-  UNDERLINE = "\x1b[4m",
 }
 
 export function concat(str: string[]) {
@@ -34,13 +25,8 @@ export function timer(ms: number) {
   });
 }
 
-type USER_DIR_DATA = {
-  dir_path: string;
-  profile_name: string;
-};
-
 export function parseUserDir(full_path: string): USER_DIR_DATA {
-  const full_path_splitted = full_path.split("/");
+  const full_path_splitted = full_path.split(path.sep);
 
   const dir_path = full_path_splitted
     .slice(0, full_path_splitted.length - 1)
@@ -50,11 +36,37 @@ export function parseUserDir(full_path: string): USER_DIR_DATA {
   return { dir_path, profile_name };
 }
 
-export function getDateString(date = new Date()) {
-  return `[${date.toLocaleString()}]`;
+export function splitDate(date = new Date()) {
+  return {
+    day: date.getDate(),
+    month: date.getMonth() + 1,
+    year: date.getFullYear(),
+    h: date.getHours(),
+    m: date.getMinutes(),
+    s: date.getSeconds(),
+    ms: date.getMilliseconds(),
+  };
+}
+
+export function getDateString(date = splitDate()) {
+  const date_stringified = `${date.day}/${date.month}/${date.year}, ${date.h}:${date.m}:${date.s}:${date.ms}`;
+  return `[${date_stringified}]`;
 }
 
 export function predictFinishDate(remain_ms: number) {
   const date_now = new Date();
-  return getDateString(new Date(date_now.getTime() + remain_ms));
+  return getDateString(splitDate(new Date(date_now.getTime() + remain_ms)));
+}
+
+export function checkAccessToPath(path: string) {
+  try {
+    const stats = fs.statSync(path);
+    return stats.isDirectory();
+  } catch (error) {
+    return false;
+  }
+}
+
+export function timeout(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }

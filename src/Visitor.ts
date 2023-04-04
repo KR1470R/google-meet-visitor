@@ -1,10 +1,11 @@
-import { Builder, WebDriver, Key } from "selenium-webdriver";
+import { Builder, WebDriver, Key, until } from "selenium-webdriver";
 import chrome from "selenium-webdriver/chrome";
 import Config from "./Config";
 import { Events, minutesToMs, timer, predictFinishDate } from "./Util";
 import Logger from "./Logger";
 import CustomOptions from "./CustomOptions";
 import Parser from "./Parser";
+import path from "node:path";
 
 export default class Visitor {
   public target_url: string;
@@ -13,27 +14,45 @@ export default class Visitor {
   private options!: CustomOptions;
   private parser!: Parser;
 
+  private pending_shutdown = false;
+
   constructor(target_url: string) {
     this.target_url = target_url;
+
+    this.options = new CustomOptions();
 
     Events.on("on_exit", (error?: string) => this.shutdown(error));
   }
 
-  public async init() {
-    this.service = new chrome.ServiceBuilder("./src/drivers/chromedriver");
-    this.options = new CustomOptions();
+  public async init_driver() {
+    this.service = new chrome.ServiceBuilder(
+      path.join("src", "drivers", "chromedriver")
+    );
     this.driver = await new Builder()
       .forBrowser("chrome")
       .setChromeService(this.service)
       .setChromeOptions(this.options)
       .build();
 
+    await this.driver.get(this.target_url);
+  }
+
+  public async start() {
+    await this.driver.sleep(2000);
+
+    Events.emit("visitor_start");
+
     await this.driver.manage().window().setRect({
-      width: 1920,
-      height: 1080,
+      width: 800,
+      height: 600,
+      x: -1000,
+      y: -1000,
     });
 
-    if (Config.get_param("MINIMIZED") === "true")
+    if (
+      Config.get_param("MINIMIZED", false) === "true" &&
+      Config.get_param("RECORD_TAB", false) !== "true"
+    )
       await this.driver.manage().window().minimize();
 
     this.parser = new Parser(this.driver);
@@ -42,10 +61,8 @@ export default class Visitor {
     Logger.printSuccess("successfully!");
   }
 
-  public async start_call() {
+  private async start_call() {
     Logger.printHeader("[start_call]", this.target_url);
-    await this.driver.sleep(2000);
-    await this.driver.get(this.target_url);
     await this.disableMediaDevices();
     await this.driver.sleep(2000);
     await this.join();
@@ -55,8 +72,8 @@ export default class Visitor {
     Events.emitCheckable("on_exit");
   }
 
-  public async stayAtCallWhile() {
-    const minutes = parseInt(Config.get_param("CALL_TIMER_MINUTES"));
+  private async stayAtCallWhile() {
+    const minutes = parseInt(Config.get_param("CALL_TIMER_MINUTES")!);
     if (Number.isNaN(minutes)) {
       Events.emit(
         "on_exit",
@@ -81,7 +98,7 @@ export default class Visitor {
           timer_for_stay_call,
           false
         );
-        if (target_el) {
+        if (target_el && until.stalenessOf(target_el)) {
           await this.driver.sleep(2000);
           await target_el?.click();
         }
@@ -92,6 +109,10 @@ export default class Visitor {
         ms -= timer_offset_ms;
       }
     }
+
+    Events.emit("visitor_stop");
+
+    await this.awaitVideoRecordSaved();
 
     Logger.printInfo("done. leaving...");
     const leave_button = await this.parser.getElementByTagName(
@@ -153,7 +174,7 @@ export default class Visitor {
       .perform();
   }
 
-  public async chooseFirstAccount() {
+  private async chooseFirstAccount() {
     Logger.printHeader("[chooseFirstAccount]");
     try {
       await this.driver.sleep(2000);
@@ -167,7 +188,11 @@ export default class Visitor {
     }
   }
 
-  public async shutdown(error?: string) {
+  private async shutdown(error?: string) {
+    if (this.pending_shutdown) return;
+
+    this.pending_shutdown = true;
+
     let exitCode = 0;
     if (error) {
       Logger.printError(error);
@@ -176,5 +201,15 @@ export default class Visitor {
     Logger.printHeader("[shutdown]");
     await this.driver.quit();
     process.exit(exitCode);
+  }
+
+  public getTabTitle() {
+    return this.driver.getTitle();
+  }
+
+  private awaitVideoRecordSaved() {
+    return new Promise<void>((resolve) => {
+      Events.on("fileSaved", resolve);
+    });
   }
 }
