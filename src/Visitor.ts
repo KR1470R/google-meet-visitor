@@ -21,7 +21,7 @@ export default class Visitor {
 
     this.options = new CustomOptions();
 
-    Events.on("on_exit", (error?: string) => this.shutdown(error));
+    // Events.on("on_exit", (error?: string) => this.shutdown(error));
   }
 
   public async init_driver() {
@@ -58,7 +58,9 @@ export default class Visitor {
     this.parser = new Parser(this.driver);
 
     await this.start_call();
+
     Logger.printSuccess("successfully!");
+    Events.emitCheckable("on_exit");
   }
 
   private async start_call() {
@@ -68,8 +70,8 @@ export default class Visitor {
     await this.join();
     await this.driver.sleep(2000);
     await this.stayAtCallWhile();
-    await this.driver.sleep(1000);
-    Events.emitCheckable("on_exit");
+    await this.driver.sleep(2000);
+    Events.emit("visitor_stop");
   }
 
   private async stayAtCallWhile() {
@@ -109,10 +111,6 @@ export default class Visitor {
         ms -= timer_offset_ms;
       }
     }
-
-    Events.emit("visitor_stop");
-
-    await this.awaitVideoRecordSaved();
 
     Logger.printInfo("done. leaving...");
     const leave_button = await this.parser.getElementByTagName(
@@ -188,28 +186,17 @@ export default class Visitor {
     }
   }
 
-  private async shutdown(error?: string) {
+  public async shutdown() {
     if (this.pending_shutdown) return;
 
     this.pending_shutdown = true;
 
-    let exitCode = 0;
-    if (error) {
-      Logger.printError(error);
-      exitCode = 1;
-    }
-    Logger.printHeader("[shutdown]");
+    Logger.printHeader("[visitor shutdown]");
+
     await this.driver.quit();
-    process.exit(exitCode);
   }
 
   public getTabTitle() {
     return this.driver.getTitle();
-  }
-
-  private awaitVideoRecordSaved() {
-    return new Promise<void>((resolve) => {
-      Events.on("fileSaved", resolve);
-    });
   }
 }

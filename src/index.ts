@@ -5,6 +5,7 @@ import { exec } from "child_process";
 import { Events } from "./Util";
 import * as path from "node:path";
 import RecordManager from "./RecordManager";
+import Logger from "./Logger";
 
 class MainApp {
   private mainWindow!: BrowserWindow;
@@ -68,6 +69,17 @@ class MainApp {
       "visitor_stop",
       this.recordManager?.stopRecord.bind(this.recordManager)
     );
+    Events.on("on_exit", async (error?: string) => {
+      let exitCode = 0;
+      if (error) {
+        Logger.printError(error);
+        exitCode = 1;
+      } else await this.recordManager.awaitFileSaving();
+
+      await this.visitor?.shutdown.call(this.visitor);
+
+      process.exit(exitCode);
+    });
   }
 }
 

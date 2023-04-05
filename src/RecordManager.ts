@@ -75,6 +75,7 @@ ${current_date.s}.mp4`;
       );
       return;
     }
+
     this.mainWindow.webContents.send("onStartRecord");
     Logger.printHeader("RecordManager", "Started recording...");
   }
@@ -87,17 +88,31 @@ ${current_date.s}.mp4`;
         "on_exit",
         "RECORD_ERROR: Main window was not specified!"
       );
-      return;
+    } else {
+      this.mainWindow.webContents.send("onStopRecord");
+
+      ipcMain.handle("fileSaved", () => {
+        Logger.printHeader(
+          "RecordManager",
+          `Your video record saved successfully in ${this.path}`
+        );
+        Events.emit("fileSaved");
+      });
     }
+  }
 
-    this.mainWindow.webContents.send("onStopRecord");
-
-    ipcMain.handle("fileSaved", () => {
-      Logger.printHeader(
-        "RecordManager",
-        `Your video record saved successfully in ${this.path}`
-      );
-      Events.emitCheckable("fileSaved");
+  public awaitFileSaving() {
+    return new Promise<void>((resolve) => {
+      if (!this.activated) resolve();
+      else {
+        const timeout = setTimeout(() => {
+          Events.emitCheckable("on_exit", "Timeout of saving video!");
+        }, 20000);
+        Events.once("fileSaved", () => {
+          clearTimeout(timeout);
+          resolve();
+        });
+      }
     });
   }
 }

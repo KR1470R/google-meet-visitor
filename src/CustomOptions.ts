@@ -22,6 +22,7 @@ export default class CustomOptions extends Options {
       // "--disable-web-security",
       // "--allow-running-insecure-content",
       // "--window-size=1920,1080",
+      "--hide-crash-restore-bubble",
     ]);
 
     const user_data_dir_path = Config.get_param("USER_DATA_DIR");
