@@ -70,3 +70,37 @@ export function checkAccessToPath(path: string) {
 export function timeout(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+export function getDriverPlatformName(): string | null {
+  const prefix = "chromedriver_";
+  const available_platforms = {
+    linux: "linux64",
+    darwin: "mac_arm64",
+    win32: "win32.exe",
+  };
+  const target_platform =
+    available_platforms?.[process.platform as keyof typeof available_platforms];
+
+  if (target_platform) return `${prefix}${target_platform}`;
+
+  return null;
+}
+
+export function modeNum(
+  m: string | number,
+  def?: string | number
+): number | undefined {
+  switch (typeof m) {
+    case "number":
+      return m;
+    case "string":
+      return parseInt(m, 8);
+    default:
+      return def ? modeNum(def) : undefined;
+  }
+}
+
+export function binary_windize(filename: string) {
+  if (process.platform === "win32") return `${filename}.exe`;
+  return filename;
+}

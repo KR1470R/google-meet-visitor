@@ -6,8 +6,10 @@ import { Events } from "./Util";
 import * as path from "node:path";
 import RecordManager from "./RecordManager";
 import Logger from "./Logger";
+import WebDriverManager from "WebDriverManager";
 
 class MainApp {
+  private webDriverManager: WebDriverManager;
   private mainWindow!: BrowserWindow;
   private visitor: Visitor;
   private recordManager: RecordManager;
@@ -21,11 +23,14 @@ class MainApp {
 
     const target_link = Config.get_param("TARGET_CALL_LINK")!;
 
+    this.webDriverManager = new WebDriverManager();
     this.visitor = new Visitor(target_link);
     this.recordManager = new RecordManager();
   }
 
   private async start() {
+    await this.webDriverManager.downloadChromeDriver();
+
     this.mainWindow = new BrowserWindow({
       width: 700,
       height: 500,
@@ -39,7 +44,7 @@ class MainApp {
 
     await this.mainWindow.loadFile("index.html");
 
-    await this.visitor.init_driver();
+    await this.visitor.init_driver(this.webDriverManager.chromedriver_path);
 
     await this.recordManager.init(
       await this.visitor.getTabTitle(),

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 import { Builder, WebDriver, Key, until } from "selenium-webdriver";
 import chrome from "selenium-webdriver/chrome";
 import Config from "./Config";
@@ -5,7 +6,6 @@ import { Events, minutesToMs, timer, predictFinishDate } from "./Util";
 import Logger from "./Logger";
 import CustomOptions from "./CustomOptions";
 import Parser from "./Parser";
-import path from "node:path";
 
 export default class Visitor {
   public target_url: string;
@@ -15,24 +15,23 @@ export default class Visitor {
   private parser!: Parser;
 
   private pending_shutdown = false;
+  private alive = false;
 
   constructor(target_url: string) {
     this.target_url = target_url;
 
     this.options = new CustomOptions();
-
-    // Events.on("on_exit", (error?: string) => this.shutdown(error));
   }
 
-  public async init_driver() {
-    this.service = new chrome.ServiceBuilder(
-      path.join("src", "drivers", "chromedriver")
-    );
+  public async init_driver(webdriver_path: string) {
+    this.service = new chrome.ServiceBuilder(webdriver_path);
     this.driver = await new Builder()
       .forBrowser("chrome")
       .setChromeService(this.service)
       .setChromeOptions(this.options)
       .build();
+
+    this.alive = true;
 
     await this.driver.get(this.target_url);
   }
@@ -187,7 +186,7 @@ export default class Visitor {
   }
 
   public async shutdown() {
-    if (this.pending_shutdown) return;
+    if (!this.alive || this.pending_shutdown) return;
 
     this.pending_shutdown = true;
 
