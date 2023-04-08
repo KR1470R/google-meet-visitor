@@ -67,7 +67,7 @@ The main purpose of using user data directory is to automate authorization of us
 Well, on the initial stages of the development that was thought that visitor should run with headless option, at least for non-recording mode. But, i faced with a lot of problem by doing it, i couldn't even join to call with headless mode, i have tried a lot of options, nevertheless google meet just have blocked it. So the only solution i came up with is just use minimized mode.
 
 # Contribution
-### I would very glad for your contributions. Any questions, issues and suggestions will be welcome!
+### I would be very glad for your contributions. Any questions, issues and suggestions will welcome!
 # License
 ![enter image description here](https://upload.wikimedia.org/wikipedia/commons/f/f8/License_icon-mit-88x31-2.svg)
 
