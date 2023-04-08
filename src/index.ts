@@ -43,7 +43,6 @@ class MainApp {
       await this.visitor.getTabTitle(),
       this.rendererManager.mainWindow!
     );
-
     this.visitor.start();
   }
 
