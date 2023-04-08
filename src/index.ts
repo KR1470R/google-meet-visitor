@@ -1,18 +1,18 @@
-import { app, BrowserWindow } from "electron";
-import Visitor from "./Visitor";
-import Config from "./Config";
+import Visitor from "./visitor/Visitor";
+import Config from "./configs/DotEnvConfig";
 import { exec } from "child_process";
-import { Events } from "./Util";
-import * as path from "node:path";
-import RecordManager from "./RecordManager";
-import Logger from "./Logger";
-import WebDriverManager from "WebDriverManager";
+import { Events } from "./utils/Util";
+import RecordManager from "./recorder/RecordManager";
+import Logger from "./utils/Logger";
+import WebDriverManager from "./drivers/WebDriverManager";
+import RendererManager from "./renderer/RendererManager";
+import { EVENTS } from "models/Models";
 
 class MainApp {
   private webDriverManager: WebDriverManager;
-  private mainWindow!: BrowserWindow;
-  private visitor: Visitor;
+  private rendererManager: RendererManager;
   private recordManager: RecordManager;
+  private visitor: Visitor;
 
   constructor() {
     // @TODO Remove this and make exit from session properly
@@ -24,57 +24,40 @@ class MainApp {
     const target_link = Config.get_param("TARGET_CALL_LINK")!;
 
     this.webDriverManager = new WebDriverManager();
-    this.visitor = new Visitor(target_link);
+    this.rendererManager = new RendererManager();
     this.recordManager = new RecordManager();
+    this.visitor = new Visitor(target_link);
+
+    this.rendererManager.onready = this.start.bind(this);
+    this.rendererManager.onactivate = () => {
+      if (this.rendererManager.isOpenedAnyWindow()) return;
+      this.start.bind(this);
+    };
   }
 
   private async start() {
     await this.webDriverManager.downloadChromeDriver();
-
-    this.mainWindow = new BrowserWindow({
-      width: 700,
-      height: 500,
-      show: false,
-      webPreferences: {
-        nodeIntegration: true,
-        contextIsolation: true,
-        preload: path.join(__dirname, "preload.js"),
-      },
-    });
-
-    await this.mainWindow.loadFile("index.html");
-
+    await this.rendererManager.init();
     await this.visitor.init_driver(this.webDriverManager.chromedriver_path);
-
     await this.recordManager.init(
       await this.visitor.getTabTitle(),
-      this.mainWindow
+      this.rendererManager.mainWindow!
     );
 
     this.visitor.start();
   }
 
   public listenEvents() {
-    app.on("ready", this.start.bind(this));
-    app.on("window-all-closed", () => {
-      if (process.platform !== "darwin") {
-        Events.emitCheckable("on_exit");
-        setImmediate(app.quit);
-      }
-    });
-    app.on("activate", () => {
-      if (BrowserWindow.getAllWindows().length === 0) this.start.bind(this)();
-    });
-
+    this.rendererManager.bindEvents();
     Events.on(
-      "visitor_start",
+      EVENTS.visitor_start,
       this.recordManager?.startRecord.bind(this.recordManager)
     );
     Events.on(
-      "visitor_stop",
+      EVENTS.visitor_stop,
       this.recordManager?.stopRecord.bind(this.recordManager)
     );
-    Events.on("on_exit", async (error?: string) => {
+    Events.on(EVENTS.exit, async (error?: string) => {
       let exitCode = 0;
       if (error) {
         Logger.printError(error);

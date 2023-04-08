@@ -10,8 +10,8 @@ const common = {
   mode: "production",
   entry: {
     app: "./src/index.ts",
-    render: "./src/static/render.ts",
-    preload: "./src/static/preload.ts",
+    render: "./src/renderer/static/render.ts",
+    preload: "./src/renderer/static/preload.ts",
   },
   output: {
     path: path.resolve(__dirname, "dist"),
@@ -41,7 +41,7 @@ const common = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: "src/static/index.html",
+      template: "./src/renderer/static/index.html",
       scriptLoading: "defer",
       chunks: ["render"],
     }),
