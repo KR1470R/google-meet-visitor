@@ -1,7 +1,7 @@
 {
   "name": "google-meet-visitor",
   "version": "5.0.0",
-  "description": "Passive agent of Google Meet that visits calls without interaction with Google Meet by user.",
+  "description": "Passive agent of Google Meet that visits and records calls without interaction with user.",
   "main": "index.js",
   "scripts": {
     "clear": "find ./dist -maxdepth 1 -type f -delete",
