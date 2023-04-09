@@ -20,7 +20,7 @@
 7. [TODO][7]
 
 # What it does
-The main purpose of the google-meet-visitor is just to visit calls in google meet. The main feature is that you can record this calls. It will automate all the user actions, i.e join to call, mute the browser, submitting that you are in the call, etc.
+The main purpose of the google-meet-visitor is just to visit calls in google meet. The main feature is that you can record calls. It will automate all the user actions, i.e join a call, mute the browser micro and cam, submit that you are in the call, etc.
 
 # Requirements
 Google Chrome **>=** 100\
