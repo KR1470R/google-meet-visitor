@@ -8,8 +8,8 @@
     "clear": "find ./dist -type f -not -path ./dist/records -delete",
     "build": "webpack --config-name common && mkdir -p ./dist/records",
     "build_crx": "mkdir -p ./dist/recorder_extension && node ./build_crx.js",
-    "up": "node ./dist/app.js",
-    "start": "npm run clear ; npm run build && npm run build_crx && npm run up"
+    "make": "npm run clear ; npm run build && npm run build_crx",
+    "start": "node ./dist/app.js"
   },
   "repository": {
     "type": "git",

@@ -1,9 +1,10 @@
+
 <div align="center">
-<h1>google-meet-visitor <sup>5.0.0</sup></h1>
+<h1>google-meet-visitor <sup>6.0.1</sup></h1>
 <img  src="./assets/logo.png">
 </div>
 
-# UNDER DEVELOPMENT.
+<h1 align="center">UNDER DEVELOPMENT</h1>
 
 # Documentation Content
 1. [What it does?][1]
@@ -26,9 +27,8 @@ The main purpose of the google-meet-visitor is just to visit calls in google mee
 
 # Requirements
 Google Chrome **>=** 100\
-Node **>=** 16.18.1\
-Selenium **>=** 4.1.13\
-Electron **>=** 24
+Node **>=** 18\
+Selenium **>=** 4.1.13
 
 # Usage
 ## Installation
@@ -50,10 +50,8 @@ All the config parameters are stored in the .env file in root of the project. Al
 ## Run
 Just go to the root directory of the google-meet-visitor and type the command:
 
-    npm run start
-
-## Record calls
-As i mentioned above, you can record your calls. But there is a nuance, while you are recording, if you minimize your window then it won't record the tab so that the output video will be lagged till you maximaze the window back. But, you can just open other windows over the browser with google-meet-visitor and just don't nevermind it while recording.
+    npm run make # build program, run after every changes you made in projet.
+    npm run start # run visitor, you have not build the project every time if you have already build it.
 
 # FAQ
 ## How to get path for ***USER_DATA_DIR***?
@@ -70,6 +68,7 @@ Well, on the initial stages of the development that was thought that visitor sho
 
 # Contribution
 ### I would be very glad for your contributions. Any questions, issues and suggestions will welcome!
+### Feel free to create new issues🙃
 # License
 ![enter image description here](https://upload.wikimedia.org/wikipedia/commons/f/f8/License_icon-mit-88x31-2.svg)
 
@@ -79,6 +78,7 @@ Well, on the initial stages of the development that was thought that visitor sho
 - correct output videos format
 - ensure support for windows
 - make alternative configuration of google-meet-visitor - by using flags in the command line.
+- test all cases
 
 [1]:https://github.com/KR1470R/google-meet-visitor#what-it-does
 [2]:https://github.com/KR1470R/google-meet-visitor#requirements
