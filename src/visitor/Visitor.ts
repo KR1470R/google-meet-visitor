@@ -64,6 +64,8 @@ export default class Visitor {
   }
 
   public async start() {
+    Events.emit(EVENTS.record_start);
+
     await this.driver.sleep(2000);
 
     Events.emit(EVENTS.visitor_start);
@@ -84,6 +86,10 @@ export default class Visitor {
     this.parser = new Parser(this.driver);
 
     await this.start_call();
+
+    this.driver.sleep(1000);
+
+    Events.emit(EVENTS.record_stop);
 
     Logger.printSuccess("successfully!");
     this.driver.sleep(2000);

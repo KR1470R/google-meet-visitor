@@ -96,7 +96,7 @@ export default class WSServer {
   }
 
   public getAddressKey(key: string): string | number | null {
-    const params = this.server.address() as AddressInfo;
+    const params = this.server?.address() as AddressInfo;
     const target_key = params?.[key as keyof typeof params];
     if (target_key) return target_key;
     return null;

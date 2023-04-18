@@ -141,19 +141,21 @@ ${current_date.s}.mp4`;
    */
   public chooseStream() {
     return new Promise<void>((resolve, reject) => {
-      Logger.printHeader(
-        "RecordManager",
-        "Choose stream for browser. (waiting for 1 minute...)"
-      );
-      let choosed = false;
-      Socket.send(EVENTS.record_choose_stream);
-      Socket.on(EVENTS.record_stream_choosed, () => (choosed = true));
-      timeoutWhileCondition(() => choosed, 60000)
-        .then(() => {
-          Logger.printHeader("RecordManager", "Stream choosed");
-          resolve();
-        })
-        .catch((err) => reject(err));
+      if (this.checkAvailable()) {
+        Logger.printHeader(
+          "RecordManager",
+          "Choose stream for browser. (waiting for 1 minute...)"
+        );
+        let choosed = false;
+        Socket.send(EVENTS.record_choose_stream);
+        Socket.on(EVENTS.record_stream_choosed, () => (choosed = true));
+        timeoutWhileCondition(() => choosed, 60000)
+          .then(() => {
+            Logger.printHeader("RecordManager", "Stream choosed");
+            resolve();
+          })
+          .catch((err) => reject(err));
+      } else resolve();
     });
   }
 

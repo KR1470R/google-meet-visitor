@@ -1,6 +1,6 @@
 import Visitor from "./visitor/Visitor";
 import { exec } from "child_process";
-import { Events, timer, Recorder, Config } from "./utils/Util";
+import { Events, Recorder, Config } from "./utils/Util";
 import Logger from "./utils/Logger";
 import WebDriverManager from "./drivers/WebDriverManager";
 import { EVENTS } from "models/Models";
@@ -31,10 +31,7 @@ class MainApp {
       await this.visitor.init_driver(this.webDriverManager.chromedriver_path);
       await Recorder.awaitForSocketReady();
       await Recorder.chooseStream();
-      await Recorder.startRecord();
-      await timer(10000);
-      await Recorder.stopRecord();
-      // this.visitor.start();
+      await this.visitor.start();
     } catch (err) {
       Events.emit(
         EVENTS.exit,
@@ -44,6 +41,9 @@ class MainApp {
   }
 
   public listenEvents() {
+    Events.on(EVENTS.record_start, Recorder.startRecord.bind(Recorder));
+    Events.on(EVENTS.record_stop, Recorder.stopRecord.bind(Recorder));
+
     Events.on(EVENTS.exit, async (error?: string) => {
       let exitCode = 0;
       if (error) {
