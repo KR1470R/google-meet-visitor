@@ -1,15 +1,24 @@
-import { BrowserWindow, desktopCapturer, ipcMain } from "electron";
-import Config from "../configs/DotEnvConfig";
-import { checkAccessToPath, Events, splitDate } from "../utils/Util";
-import { RecordOptions, EVENTS } from "../models/Models";
-import path from "node:path";
+import { EVENTS, RecorderData } from "../models/Models";
 import Logger from "../utils/Logger";
+import path from "node:path";
+import {
+  checkAccessToPath,
+  Events,
+  splitDate,
+  Socket,
+  timeoutWhileCondition,
+  Config,
+} from "../utils/Util";
+import * as fs from "node:fs";
 
+/**
+ * Record Manager that provide controll Media Stream from Chrome extension and its output saving.
+ */
 export default class RecordManager {
   public activated: boolean;
+  private ready = false;
   private path: string;
-  private current_tab_source?: Electron.DesktopCapturerSource;
-  private mainWindow?: BrowserWindow;
+  private output_stream?: fs.WriteStream;
 
   constructor() {
     this.activated = Config.get_param("RECORD_TAB", false) === "true";
@@ -29,78 +38,129 @@ ${current_date.s}.mp4`;
         : path.join(__dirname, filename);
   }
 
-  public async init(target_tab_name: string, mainWindow: BrowserWindow) {
-    if (!this.activated) return;
-
-    this.mainWindow = mainWindow;
-
-    const media_sources = await desktopCapturer.getSources({
-      types: ["window", "screen"],
-    });
-    this.current_tab_source = media_sources.find((tab) =>
-      tab.name.includes(target_tab_name)
-    );
-
-    if (!this.current_tab_source) {
-      Events.emit(
-        EVENTS.exit,
-        `Couldn't find target window with title: ${target_tab_name}`
-      );
+  /**
+   * Init all required options, events and socket.
+   * @returns Promise<void>
+   */
+  public async init() {
+    if (!this.activated) {
+      Logger.printInfo("Recorder disabled, skip...");
       return;
     }
+    await Socket.init();
 
-    ipcMain.handle(EVENTS.ipc_fetch_record_options, () => {
-      return {
-        isActive: this.activated,
-        isMuted: false,
-        targetWindowSource: this.current_tab_source,
-        filePath: this.path,
-      } as RecordOptions;
+    Socket.on(EVENTS.record_ready, () => {
+      this.ready = true;
+      this.output_stream = fs.createWriteStream(this.path);
     });
+    Socket.on(EVENTS.record_chunk, (data?: RecorderData | Buffer) => {
+      if (!Buffer.isBuffer(data)) return;
 
-    ipcMain.on(EVENTS.ipc_error, (event, error) => {
-      Events.emitCheckable(EVENTS.exit, error);
+      this.output_stream?.write(data);
     });
-
-    this.mainWindow.webContents.send(EVENTS.ipc_run_cmd);
+    Socket.on(EVENTS.record_error, (data?: RecorderData | Buffer) => {
+      if (Buffer.isBuffer(data)) return;
+      if (!data?.error) {
+        Events.emit(EVENTS.exit, "Unkown recorder error!");
+        return;
+      }
+      Events.emit(EVENTS.exit, `Recorder error: ${data!.error}`);
+    });
   }
 
+  /**
+   * Awaits untill socket respond ready signal.
+   * If socket didn't returned ready signal for 30s, reject performs as well.
+   * @returns Promise<void>
+   */
+  public async awaitForSocketReady() {
+    try {
+      if (this.activated) {
+        await timeoutWhileCondition(() => this.ready, 30000);
+        Logger.printInfo("Recorder is ready.");
+      }
+      return Promise.resolve();
+    } catch (err) {
+      throw new Error(
+        `Couldn't connect record socket: ${(err as Error).message || err}`
+      );
+    }
+  }
+
+  /**
+   * Sends start record signal into MediaStream on Chrome Extension.
+   * @returns void
+   */
   public startRecord() {
-    if (!this.activated) return;
-
-    if (!this.mainWindow) {
-      Events.emitCheckable(
-        EVENTS.exit,
-        "RECORD_ERROR: Main window was not specified!"
-      );
-      return;
-    }
-
-    this.mainWindow.webContents.send(EVENTS.ipc_start_record);
-    Logger.printHeader("RecordManager", "Started recording...");
+    return new Promise<void>((resolve, reject) => {
+      try {
+        if (!this.checkAvailable()) return;
+        if (!this.output_stream) {
+          Events.emit(
+            EVENTS.exit,
+            "Coudn't start record: output stream is not open!"
+          );
+        } else {
+          Socket.send(EVENTS.record_start);
+          Logger.printHeader("RecordManager", "Started recording...");
+        }
+        resolve();
+      } catch (err) {
+        reject(err);
+      }
+    });
   }
 
+  /**
+   * Sends stop record signal into MediaStream on Chrome Extension.
+   * @returns void
+   */
   public stopRecord() {
-    if (!this.activated) return;
-
-    if (!this.mainWindow) {
-      Events.emitCheckable(
-        EVENTS.exit,
-        "RECORD_ERROR: Main window was not specified!"
-      );
-    } else {
-      this.mainWindow.webContents.send(EVENTS.ipc_stop_record);
-
-      ipcMain.handle(EVENTS.record_file_saved, () => {
-        Logger.printHeader(
-          "RecordManager",
-          `Your video record saved successfully in ${this.path}`
-        );
-        Events.emit(EVENTS.record_file_saved);
-      });
-    }
+    return new Promise<void>((resolve, reject) => {
+      if (!this.checkAvailable()) resolve();
+      if (!this.output_stream) {
+        reject(new Error("Coudn't stop record: output stream is not open!"));
+      } else {
+        Socket.send(EVENTS.record_stop);
+        Socket.on(EVENTS.record_finished, () => {
+          Logger.printHeader(
+            "RecordManager",
+            `Your video record saved successfully in ${this.path}`
+          );
+          this.output_stream?.close();
+          resolve();
+        });
+      }
+    });
   }
 
+  /**
+   * Sends signal to Chrome Extension, that opends popup to choose tab record to.
+   * If user does not choose a tab for 1 minute, timeout throws as well.
+   * @returns Promise<void>
+   */
+  public chooseStream() {
+    return new Promise<void>((resolve, reject) => {
+      Logger.printHeader(
+        "RecordManager",
+        "Choose stream for browser. (waiting for 1 minute...)"
+      );
+      let choosed = false;
+      Socket.send(EVENTS.record_choose_stream);
+      Socket.on(EVENTS.record_stream_choosed, () => (choosed = true));
+      timeoutWhileCondition(() => choosed, 60000)
+        .then(() => {
+          Logger.printHeader("RecordManager", "Stream choosed");
+          resolve();
+        })
+        .catch((err) => reject(err));
+    });
+  }
+
+  /**
+   * Awaits for record output save is done.
+   * @returns Promise<void>
+   */
   public awaitFileSaving() {
     return new Promise<void>((resolve) => {
       if (!this.activated) resolve();
@@ -108,11 +168,22 @@ ${current_date.s}.mp4`;
         const timeout = setTimeout(() => {
           Events.emitCheckable(EVENTS.exit, "Timeout of saving video!");
         }, 20000);
-        Events.once(EVENTS.record_file_saved, () => {
+        Events.once(EVENTS.record_finished, () => {
           clearTimeout(timeout);
           resolve();
         });
       }
     });
+  }
+
+  /**
+   * Checks if RecorderManager actived, is connected to socket and is socket ready.
+   * @returns boolean or error.
+   */
+  private checkAvailable(): boolean | never {
+    if (!this.activated) return false;
+    if (!Socket.isConnected()) throw new Error("Socket is not connected!");
+    if (!this.ready) throw new Error("Recorder is not ready!");
+    return true;
   }
 }

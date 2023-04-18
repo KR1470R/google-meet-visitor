@@ -5,24 +5,24 @@ import { EVENTS } from "../models/Models";
 
 dotenv.config();
 
+/**
+ * Manager of .env config.
+ */
 export default class DotEnvConfig {
   constructor() {}
 
-  public static init() {
+  public init() {
     const important_params: Array<Uppercase<string>> = [
       "USER_DATA_DIR",
       "TARGET_CALL_LINK",
       "CALL_TIMER_MINUTES",
     ];
     important_params.forEach(
-      (param: Uppercase<string>) => DotEnvConfig.get_param(param)!
+      (param: Uppercase<string>) => this.get_param(param)!
     );
   }
 
-  public static get_param(
-    key: Uppercase<string>,
-    throwable = true
-  ): string | null {
+  public get_param(key: Uppercase<string>, throwable = true): string | null {
     let error;
 
     if (!process?.env?.[key] || !process?.env?.[key]!.length)

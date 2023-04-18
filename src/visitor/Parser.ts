@@ -2,9 +2,17 @@ import { By, until, WebDriver, WebElement } from "selenium-webdriver";
 import { getRandomInt, Events } from "../utils/Util";
 import { EVENTS } from "../models/Models";
 
+/**
+ * Helper for parse elements on page.
+ */
 export default class Parser {
   constructor(private driver: WebDriver) {}
 
+  /**
+   * Returns element by tag name.
+   * @param name
+   * @returns
+   */
   public async getElementByTagName(
     name: string
   ): Promise<WebElement | undefined> {
@@ -20,6 +28,12 @@ export default class Parser {
     }
   }
 
+  /**
+   * Returns element by inner text.
+   * @param name
+   * @param text
+   * @returns
+   */
   public async getElementByInnerText(
     name: string,
     text: string
@@ -36,6 +50,12 @@ export default class Parser {
     return Promise.resolve(undefined);
   }
 
+  /**
+   * Bind callback on element which calls after element is found.
+   * @param name
+   * @param text
+   * @param callback
+   */
   public async findElementByInnerTextAndBind(
     name: string,
     text: string,
@@ -45,6 +65,11 @@ export default class Parser {
     await callback(target_el);
   }
 
+  /**
+   * Simulate user typing on given input type
+   * @param input
+   * @param text
+   */
   public async humanTypeInput(input: WebElement, text: string) {
     for (const char of text) {
       await this.driver.sleep(getRandomInt(0, 600));
@@ -52,6 +77,13 @@ export default class Parser {
     }
   }
 
+  /**
+   * Await for given element's xpath appear on page with given timeout.
+   * @param xpath string - Xpath of element
+   * @param timeout number - how many milliseconds wait for element
+   * @param throwable boolean - throw if element was not found after timeout expires
+   * @returns
+   */
   public async waitFor(xpath: string, timeout: number, throwable: boolean) {
     try {
       const target_el = await this.driver.wait(

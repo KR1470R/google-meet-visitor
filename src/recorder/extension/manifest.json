@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "audio recorder",
+  "version": "1.0.0",
+  "permissions": [
+    "tabs", 
+    "activeTab", 
+    "scripting", 
+    "desktopCapture", 
+    "storage"
+  ],
+  "background": {
+    "service_worker": "./background.js"
+  },
+  "content_scripts": [{
+    "matches": ["<all_urls>"],
+    "js": ["./foreground.js"]
+  }],
+  "action": {
+    "default_popup": "./index.html"
+  }
+}

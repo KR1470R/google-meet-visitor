@@ -1,13 +1,26 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import { Builder, WebDriver, Key, until } from "selenium-webdriver";
 import chrome from "selenium-webdriver/chrome";
-import Config from "../configs/DotEnvConfig";
-import { Events, minutesToMs, timer, predictFinishDate } from "../utils/Util";
+import {
+  Events,
+  minutesToMs,
+  timer,
+  predictFinishDate,
+  Socket,
+  Config,
+} from "../utils/Util";
 import Logger from "../utils/Logger";
 import CustomOptions from "./CustomOptions";
 import Parser from "./Parser";
 import { EVENTS } from "../models/Models";
 
+/**
+ * Visitor that performs such actions:
+ *  - join call;
+ *  - mute all media devices if user specified such options;
+ *  - visit call;
+ *  - stay at call for a time specified by user.
+ */
 export default class Visitor {
   public target_url: string;
   private driver!: WebDriver;
@@ -25,16 +38,29 @@ export default class Visitor {
   }
 
   public async init_driver(webdriver_path: string) {
-    this.service = new chrome.ServiceBuilder(webdriver_path);
-    this.driver = await new Builder()
-      .forBrowser("chrome")
-      .setChromeService(this.service)
-      .setChromeOptions(this.options)
-      .build();
+    try {
+      const server_port = Socket.getAddressKey("port");
 
-    this.alive = true;
+      this.service = new chrome.ServiceBuilder(webdriver_path);
+      this.driver = await new Builder()
+        .forBrowser("chrome")
+        .setChromeService(this.service)
+        .setChromeOptions(this.options)
+        .build();
 
-    await this.driver.get(this.target_url);
+      this.alive = true;
+
+      await this.driver.get(this.target_url);
+
+      if (server_port)
+        await this.driver.executeScript(
+          `
+          localStorage.setItem("recorder_port", ${String(server_port)});
+          `
+        );
+    } catch (err) {
+      throw err;
+    }
   }
 
   public async start() {
@@ -60,6 +86,7 @@ export default class Visitor {
     await this.start_call();
 
     Logger.printSuccess("successfully!");
+    this.driver.sleep(2000);
     Events.emitCheckable(EVENTS.exit);
   }
 

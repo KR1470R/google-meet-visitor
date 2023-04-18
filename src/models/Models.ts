@@ -18,22 +18,37 @@ export enum COLORS {
 export type RecordOptions = {
   isActive: boolean;
   isMuted: boolean;
-  targetWindowSource: Electron.DesktopCapturerSource;
+  // targetWindowSource: Electron.DesktopCapturerSource;
   filePath: string;
 };
 
 export const EVENTS = {
-  ipc_error: "ipc_error",
-  ipc_fetch_record_options: "ipc_fetch_record_options",
-  ipc_run_cmd: "ipc_run_cmd",
-  ipc_start_record: "ipc_start_record",
-  ipc_stop_record: "ipc_stop_record",
-  renderer_run: "renderer_run",
-  renderer_file_saved: "renderer_file_saved",
+  record_ready: "record_ready",
+  record_choose_stream: "record_choose_stream",
+  record_stream_choosed: "record_stream_choosed",
   record_stop: "record_stop",
   record_start: "record_start",
-  record_file_saved: "record_file_saved",
+  record_chunk: "record_chunk",
+  record_finished: "record_finished",
+  record_error: "record_error",
   visitor_start: "visitor_start",
   visitor_stop: "visitor_stop",
   exit: "exit",
+};
+
+export type RecorderStates =
+  | "record_ready"
+  | "record_stop"
+  | "record_start"
+  | "record_load"
+  | "record_error";
+
+export type RecorderData = {
+  chunk?: Blob;
+  error?: string;
+};
+
+export type RecorderResponse = {
+  type: RecorderStates;
+  data?: RecorderData;
 };

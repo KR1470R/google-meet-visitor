@@ -23,7 +23,7 @@
   "include": [
       "src/**/*",
       "configs/*"
-    ],
+, "src/recorder/extension/extension"    ],
   "exclude": [
       "node_modules",
       "src/renderer/static",

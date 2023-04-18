@@ -1,13 +1,15 @@
 {
   "name": "google-meet-visitor",
-  "version": "5.0.0",
+  "version": "6.0.0",
   "description": "Passive agent of Google Meet that visits and records calls without interaction with user.",
   "main": "index.js",
+  "type": "commonjs",
   "scripts": {
-    "clear": "find ./dist -maxdepth 1 -type f -delete",
+    "clear": "find ./dist -type f -not -path ./dist/records -delete",
     "build": "webpack --config-name common && mkdir -p ./dist/records",
-    "up": "electron ./dist/app.js",
-    "start": "npm run clear && npm run build && npm run up"
+    "build_crx": "mkdir -p ./dist/recorder_extension && node ./build_crx.js",
+    "up": "node ./dist/app.js",
+    "start": "npm run clear ; npm run build && npm run build_crx && npm run up"
   },
   "repository": {
     "type": "git",
@@ -29,29 +31,27 @@
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.55.0",
     "@typescript-eslint/parser": "^5.55.0",
-    "clean-webpack-plugin": "^4.0.0",
     "dotenv-webpack": "^8.0.1",
     "eslint": "^8.36.0",
     "eslint-config-prettier": "^8.7.0",
     "eslint-plugin-prettier": "^4.2.1",
-    "html-webpack-plugin": "^5.5.0",
-    "stream-browserify": "^3.0.0",
     "ts-loader": "^9.4.2",
     "tsconfig-paths-webpack-plugin": "^4.0.1",
     "typescript": "^5.0.2",
     "webdriver-manager": "^12.1.9",
-    "webpack": "^5.77.0",
+    "webpack": "^5.79.0",
     "webpack-bundle-analyzer": "^4.8.0",
     "webpack-cli": "^5.0.1"
   },
   "dependencies": {
     "@types/events": "^3.0.0",
     "@types/selenium-webdriver": "^4.1.13",
+    "@types/ws": "^8.5.4",
+    "crx": "^5.0.1",
     "dotenv": "^16.0.3",
-    "electron": "^24.0.0",
     "event": "^1.0.0",
     "node-stream-zip": "^1.15.0",
     "selenium-webdriver": "^4.8.1",
-    "undici": "^5.21.0"
+    "ws": "^8.13.0"
   }
 }
