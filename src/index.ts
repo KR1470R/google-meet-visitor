@@ -51,6 +51,8 @@ class MainApp {
         exitCode = 1;
       }
 
+      await Recorder.stopRecord.call(Recorder);
+
       await this.visitor?.shutdown.call(this.visitor);
 
       process.exit(exitCode);

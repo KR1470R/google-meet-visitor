@@ -92,7 +92,7 @@ ${current_date.s}.mp4`;
    * @returns void
    */
   public startRecord() {
-    return new Promise<void>((resolve, reject) => {
+    return new Promise<void>((resolve) => {
       try {
         if (!this.checkAvailable()) return;
         if (!this.output_stream) {
@@ -106,7 +106,7 @@ ${current_date.s}.mp4`;
         }
         resolve();
       } catch (err) {
-        reject(err);
+        Events.emit(EVENTS.exit, String(err));
       }
     });
   }
@@ -128,6 +128,7 @@ ${current_date.s}.mp4`;
             `Your video record saved successfully in ${this.path}`
           );
           this.output_stream?.close();
+          Socket.closeConnection();
           resolve();
         });
       }
@@ -183,9 +184,7 @@ ${current_date.s}.mp4`;
    * @returns boolean or error.
    */
   private checkAvailable(): boolean | never {
-    if (!this.activated) return false;
-    if (!Socket.isConnected()) throw new Error("Socket is not connected!");
-    if (!this.ready) throw new Error("Recorder is not ready!");
+    if (!this.activated || !Socket.isConnected() || !this.ready) return false;
     return true;
   }
 }

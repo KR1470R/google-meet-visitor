@@ -9,7 +9,7 @@ export default class Parser {
   constructor(private driver: WebDriver) {}
 
   /**
-   * Returns element by tag name.
+   * Returns element by tag name or undefined if element not found.
    * @param name
    * @returns
    */
@@ -29,25 +29,40 @@ export default class Parser {
   }
 
   /**
-   * Returns element by inner text.
+   * Returns element by inner text, or undefined if element not found.
    * @param name
    * @param text
    * @returns
    */
   public async getElementByInnerText(
     name: string,
-    text: string
+    text: string,
+    throwable = true
   ): Promise<WebElement | undefined> {
-    const buttons = await this.driver.findElements(By.css(name));
-    for (const button of buttons) {
-      if ((await button.getText()) === text) return button;
-    }
+    try {
+      const buttons = await this.driver.findElements(By.css(name));
+      for (const button of buttons) {
+        if ((await button.getText()).toLowerCase() === text.toLowerCase())
+          return button;
+      }
 
-    Events.emitCheckable(
-      EVENTS.exit,
-      `ParserError: Element <${name}> with text "${text}" not found!`
-    );
-    return Promise.resolve(undefined);
+      if (throwable) {
+        Events.emitCheckable(
+          EVENTS.exit,
+          `ParserError: Element <${name}> with text "${text}" not found!`
+        );
+      }
+
+      return Promise.resolve(undefined);
+    } catch (err) {
+      if (throwable) {
+        Events.emitCheckable(
+          EVENTS.exit,
+          `ParserError: Element <${name}> with text "${text}" not found!`
+        );
+      }
+      return Promise.resolve(undefined);
+    }
   }
 
   /**
@@ -100,5 +115,33 @@ export default class Parser {
       }
       return Promise.resolve(undefined);
     }
+  }
+
+  public waitForElementWithInnerText(
+    name: string,
+    text: string,
+    timeout: number,
+    throwable = true
+  ) {
+    const fetch_elem = async (): Promise<WebElement | undefined> => {
+      const target_elem = await this.getElementByInnerText(name, text, false);
+      if (target_elem) return Promise.resolve(target_elem);
+      else {
+        if (timeout <= 0) {
+          if (throwable) {
+            Events.emitCheckable(
+              EVENTS.exit,
+              `ParserError: Element <${name}> with text "${text}" not found!`
+            );
+            await this.driver.sleep(2000);
+          }
+          return Promise.resolve(undefined);
+        } else {
+          timeout -= 500;
+          return fetch_elem();
+        }
+      }
+    };
+    return fetch_elem();
   }
 }

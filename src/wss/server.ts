@@ -13,6 +13,7 @@ export default class WSServer {
   private connected?: WebSocket;
   private listeners: Record<string, (data?: RecorderData | Buffer) => void> =
     {};
+  private shouldClose = false;
 
   constructor() {}
 
@@ -32,8 +33,17 @@ export default class WSServer {
           ws.on("error", (err) => {
             Events.emitCheckable(EVENTS.exit, err);
           });
-          ws.on("close", () => {
-            Events.emit(EVENTS.exit, "Connection with client closed suddenly!");
+          ws.on("close", (code: number, reason: Buffer) => {
+            const reason_translated = translateResponse(reason);
+            if (!this.shouldClose) {
+              console.log(
+                `Connection with client closed suddenly: ${reason_translated}(status: ${code})`
+              );
+              Events.emit(
+                EVENTS.exit,
+                `Connection with client closed suddenly: ${reason_translated}(status: ${code})`
+              );
+            }
           });
         });
         this.server.on("listening", () => {
@@ -44,7 +54,7 @@ export default class WSServer {
         });
         this.server.on("close", () => {
           Logger.printInfo("Socket closed... exiting");
-          Events.emit(EVENTS.exit);
+          if (!this.shouldClose) Events.emit(EVENTS.exit);
         });
       });
     });
@@ -76,6 +86,17 @@ export default class WSServer {
       }
 
       target_listener(translated.data);
+    }
+  }
+
+  public closeConnection() {
+    if (this.isConnected()) {
+      Logger.printInfo("Closing socket connection");
+      this.shouldClose = true;
+      this.connected!.close();
+      this.server.close();
+      this.connected = undefined;
+      this.shouldClose = false;
     }
   }
 

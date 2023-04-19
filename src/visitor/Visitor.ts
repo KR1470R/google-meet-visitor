@@ -8,6 +8,7 @@ import {
   predictFinishDate,
   Socket,
   Config,
+  timeoutWhileCondition,
 } from "../utils/Util";
 import Logger from "../utils/Logger";
 import CustomOptions from "./CustomOptions";
@@ -50,6 +51,8 @@ export default class Visitor {
 
       this.alive = true;
 
+      this.parser = new Parser(this.driver);
+
       await this.driver.get(this.target_url);
 
       if (server_port)
@@ -58,6 +61,8 @@ export default class Visitor {
           localStorage.setItem("recorder_port", ${String(server_port)});
           `
         );
+
+      await this.provideLoginIsRequred();
     } catch (err) {
       throw err;
     }
@@ -83,8 +88,6 @@ export default class Visitor {
     )
       await this.driver.manage().window().minimize();
 
-    this.parser = new Parser(this.driver);
-
     await this.start_call();
 
     this.driver.sleep(1000);
@@ -98,6 +101,7 @@ export default class Visitor {
 
   private async start_call() {
     Logger.printHeader("[start_call]", this.target_url);
+    await this.isICanJoinCall();
     await this.disableMediaDevices();
     await this.driver.sleep(2000);
     await this.join();
@@ -176,7 +180,10 @@ export default class Visitor {
       );
 
       if (ask_to_join)
-        Events.emit(EVENTS.exit, "You cannot join this call due need to ask.");
+        Events.emit(
+          EVENTS.exit,
+          "You cannot join this call, because you need to ask."
+        );
       else Events.emit(EVENTS.exit, "Uknown error to join this call");
 
       this.driver.sleep(2000);
@@ -219,6 +226,19 @@ export default class Visitor {
     }
   }
 
+  private async isICanJoinCall() {
+    Logger.printHeader("visitor", "checking can i join call...");
+    const returnToCall = await this.parser.waitFor(
+      "//*[contains(text(), 'Return to home screen')]/parent::button",
+      5000,
+      false
+    );
+    if (returnToCall) {
+      Events.emit(EVENTS.exit, "You cant join this call!");
+      await this.driver.sleep(2000);
+    } else return Promise.resolve();
+  }
+
   public async shutdown() {
     if (!this.alive || this.pending_shutdown) return;
 
@@ -231,5 +251,31 @@ export default class Visitor {
 
   public getTabTitle() {
     return this.driver.getTitle();
+  }
+
+  public async provideLoginIsRequred() {
+    Logger.printHeader(
+      "visitor",
+      "checking is google account login is required..."
+    );
+    const sigin_label = await this.parser.waitForElementWithInnerText(
+      "span",
+      "Sign in",
+      5000,
+      false
+    );
+
+    if (!sigin_label) return Promise.resolve();
+
+    Logger.printHeader(
+      "visitor",
+      "Sign in required, waiting for 5 minutes untill the user perform login..."
+    );
+
+    await timeoutWhileCondition(
+      (async () =>
+        (await this.driver.getCurrentUrl()) === this.target_url).bind(this),
+      300000
+    );
   }
 }

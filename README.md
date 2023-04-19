@@ -1,6 +1,6 @@
 
 <div align="center">
-<h1>google-meet-visitor <sup>6.0.2</sup></h1>
+<h1>google-meet-visitor <sup>6.0.3</sup></h1>
 <img  src="./assets/logo.png">
 </div>
 
@@ -50,8 +50,8 @@ All the config parameters are stored in the .env file in root of the project. Al
 ## Run
 Just go to the root directory of the google-meet-visitor and type the command:
 
-    npm run make # build program, run after every changes you made in projet.
-    npm run start # run visitor, you have not build the project every time if you have already build it.
+    npm run make # build the program, run after every changes you made in the project.
+    npm run start # run the visitor, you have not build the project every time if you have already build it.
 
 # FAQ
 ## How to get path for ***USER_DATA_DIR***?

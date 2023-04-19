@@ -178,13 +178,16 @@ export function translateResponse(message: Buffer): RecorderResponse | Buffer {
  * @param ms
  * @returns
  */
-export function timeoutWhileCondition(condition: () => boolean, ms: number) {
+export function timeoutWhileCondition(
+  condition: () => boolean | Promise<boolean>,
+  ms: number
+) {
   return new Promise<void>((resolve, reject) => {
     let counter = 0;
     const delay = 1000;
-    const interval = setInterval(() => {
+    const interval = setInterval(async () => {
       counter += delay;
-      if (condition()) {
+      if (await condition()) {
         resolve();
         clearInterval(interval);
       } else {

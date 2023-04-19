@@ -35,7 +35,7 @@ const common = {
     plugins: [new TsconfigPathsPlugin({ configFile: "./tsconfig.json" })],
   },
   optimization: {
-    minimize: false,
+    minimize: true,
     minimizer: [
       new TerserPlugin({
         terserOptions: {
