@@ -1,6 +1,7 @@
 
+
 <div align="center">
-<h1>google-meet-visitor <sup>6.0.6</sup></h1>
+<h1>google-meet-visitor <sup>6.0.7</sup></h1>
 <img  src="./assets/logo.png">
 </div>
 
@@ -48,6 +49,8 @@ All the config parameters are stored in the .env file in root of the project. Al
 ***OUTPUT_RECORD_TAB*** - custom path of output records. By default is `dist/records/` in the root.
 
 ## Run
+‼️Before running visitor, ensure that you have signed in your account.‼️
+⚠️It might ask you to login again to ensure that it's you, but visitor will recognize and give you 5 minutes to input password.
 Just go to the root directory of the google-meet-visitor and type the command:
 
     npm run make # build the program, run after every changes you made in the project.

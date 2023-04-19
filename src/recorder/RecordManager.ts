@@ -58,8 +58,9 @@ ${current_date.s}.mp4`;
 
       this.output_stream?.write(data);
     });
-    Socket.on(EVENTS.record_error, (data?: RecorderData | Buffer) => {
+    Socket.on(EVENTS.record_error, async (data?: RecorderData | Buffer) => {
       if (Buffer.isBuffer(data)) return;
+      await Socket.closeConnection();
       if (!data?.error) {
         Events.emit(EVENTS.exit, "Unkown recorder error!");
         return;
