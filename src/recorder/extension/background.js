@@ -146,6 +146,8 @@ class BackgroundClient {
             break;
           case "record_error":
             throw new Error(request.error);
+          case "keep_alive":
+            break;
           default:
             throw new Error(
               `Received unkown request type from content client: ${request.type}`

@@ -36,9 +36,6 @@ export default class WSServer {
           ws.on("close", (code: number, reason: Buffer) => {
             const reason_translated = translateResponse(reason);
             if (!this.shouldClose) {
-              console.log(
-                `Connection with client closed suddenly: ${reason_translated}(status: ${code})`
-              );
               Events.emit(
                 EVENTS.exit,
                 `Connection with client closed suddenly: ${reason_translated}(status: ${code})`
@@ -53,7 +50,7 @@ export default class WSServer {
           resolve();
         });
         this.server.on("close", () => {
-          Logger.printInfo("Socket closed... exiting");
+          Logger.printInfo("Socket closed.");
           if (!this.shouldClose) Events.emit(EVENTS.exit);
         });
       });
@@ -90,14 +87,17 @@ export default class WSServer {
   }
 
   public closeConnection() {
-    if (this.isConnected()) {
-      Logger.printInfo("Closing socket connection");
-      this.shouldClose = true;
-      this.connected!.close();
-      this.server.close();
-      this.connected = undefined;
-      this.shouldClose = false;
-    }
+    return new Promise<void>((resolve) => {
+      if (this.isConnected()) {
+        Logger.printInfo("Closing socket connection");
+        this.shouldClose = true;
+        this.connected!.close();
+        this.connected = undefined;
+        this.server.close(() => {
+          resolve();
+        });
+      }
+    });
   }
 
   public send(message: string) {

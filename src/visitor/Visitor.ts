@@ -9,6 +9,7 @@ import {
   Socket,
   Config,
   timeoutWhileCondition,
+  Recorder,
 } from "../utils/Util";
 import Logger from "../utils/Logger";
 import CustomOptions from "./CustomOptions";
@@ -69,7 +70,7 @@ export default class Visitor {
   }
 
   public async start() {
-    Events.emit(EVENTS.record_start);
+    await Recorder.startRecord();
 
     await this.driver.sleep(2000);
 
@@ -92,15 +93,16 @@ export default class Visitor {
 
     this.driver.sleep(1000);
 
-    Events.emit(EVENTS.record_stop);
+    await Recorder.stopRecord();
 
     Logger.printSuccess("successfully!");
     this.driver.sleep(2000);
-    Events.emitCheckable(EVENTS.exit);
+
+    await this.shutdown();
   }
 
   private async start_call() {
-    Logger.printHeader("[start_call]", this.target_url);
+    Logger.printHeader("[Visitor]", `Starting call at ${this.target_url}...`);
     await this.isICanJoinCall();
     await this.disableMediaDevices();
     await this.driver.sleep(2000);
@@ -121,8 +123,10 @@ export default class Visitor {
     }
 
     Logger.printHeader(
-      "[stayAtCallWhile]",
-      `${predictFinishDate(minutesToMs(minutes))}(${minutes} minutes)`
+      "[Visitor]",
+      `Staying at call till ${predictFinishDate(
+        minutesToMs(minutes)
+      )}(${minutes} minutes)`
     );
 
     let ms = minutesToMs(minutes);
@@ -149,7 +153,7 @@ export default class Visitor {
       }
     }
 
-    Logger.printInfo("done. leaving...");
+    Logger.printHeader("[Visitor]", "Done! Leaving...");
     const leave_button = await this.parser.getElementByTagName(
       "button[aria-label='Leave call'][role=button]"
     );
@@ -158,7 +162,7 @@ export default class Visitor {
   }
 
   private async join() {
-    Logger.printHeader("[join]");
+    Logger.printHeader("[Visitor]", "Joining call...");
 
     const button_join = await this.parser.waitFor(
       "//*[contains(text(), 'Join now')]/parent::button",
@@ -169,7 +173,7 @@ export default class Visitor {
     if (button_join) {
       await this.driver.sleep(2000);
       await button_join?.click();
-      Logger.printInfo("joined!");
+      Logger.printHeader("[Visitor]", "Joined!");
     } else {
       Logger.printError("Couldn't find join button!");
       Logger.printWarning("checking is user has permissions to join...");
@@ -191,7 +195,7 @@ export default class Visitor {
   }
 
   private async disableMediaDevices() {
-    Logger.printHeader("[disableMediaDevices]");
+    Logger.printHeader("[Visitor]", "Disabling media devices at call...");
 
     Logger.printInfo("disabling camera...");
     await this.driver
@@ -212,6 +216,10 @@ export default class Visitor {
       .perform();
   }
 
+  /**
+   * deprecated.
+   * @returns
+   */
   private async chooseFirstAccount() {
     Logger.printHeader("[chooseFirstAccount]");
     try {
@@ -227,14 +235,14 @@ export default class Visitor {
   }
 
   private async isICanJoinCall() {
-    Logger.printHeader("visitor", "checking can i join call...");
+    Logger.printHeader("[Visitor]", "Checking can i join call...");
     const returnToCall = await this.parser.waitFor(
       "//*[contains(text(), 'Return to home screen')]/parent::button",
       5000,
       false
     );
     if (returnToCall) {
-      Events.emit(EVENTS.exit, "You cant join this call!");
+      Events.emit(EVENTS.exit, "I cannot join this call!");
       await this.driver.sleep(2000);
     } else return Promise.resolve();
   }
@@ -244,7 +252,7 @@ export default class Visitor {
 
     this.pending_shutdown = true;
 
-    Logger.printHeader("[visitor shutdown]");
+    Logger.printHeader("[Visitor]", "Shutdown.");
 
     await this.driver.quit();
   }
@@ -255,8 +263,8 @@ export default class Visitor {
 
   public async provideLoginIsRequred() {
     Logger.printHeader(
-      "visitor",
-      "checking is google account login is required..."
+      "[Visitor]",
+      "Checking is google account login is required..."
     );
     const sigin_label = await this.parser.waitForElementWithInnerText(
       "span",
@@ -268,7 +276,7 @@ export default class Visitor {
     if (!sigin_label) return Promise.resolve();
 
     Logger.printHeader(
-      "visitor",
+      "[Visitor]",
       "Sign in required, waiting for 5 minutes untill the user perform login..."
     );
 

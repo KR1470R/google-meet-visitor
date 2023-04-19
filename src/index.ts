@@ -41,17 +41,12 @@ class MainApp {
   }
 
   public listenEvents() {
-    Events.on(EVENTS.record_start, Recorder.startRecord.bind(Recorder));
-    Events.on(EVENTS.record_stop, Recorder.stopRecord.bind(Recorder));
-
     Events.on(EVENTS.exit, async (error?: string) => {
       let exitCode = 0;
       if (error) {
         Logger.printError(error);
         exitCode = 1;
       }
-
-      await Recorder.stopRecord.call(Recorder);
 
       await this.visitor?.shutdown.call(this.visitor);
 

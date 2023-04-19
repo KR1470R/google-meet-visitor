@@ -118,19 +118,22 @@ ${current_date.s}.mp4`;
   public stopRecord() {
     return new Promise<void>((resolve, reject) => {
       if (!this.checkAvailable()) resolve();
-      if (!this.output_stream) {
-        reject(new Error("Coudn't stop record: output stream is not open!"));
-      } else {
-        Socket.send(EVENTS.record_stop);
-        Socket.on(EVENTS.record_finished, () => {
-          Logger.printHeader(
-            "RecordManager",
-            `Your video record saved successfully in ${this.path}`
-          );
-          this.output_stream?.close();
-          Socket.closeConnection();
-          resolve();
-        });
+      else {
+        if (!this.output_stream) {
+          reject(new Error("Coudn't stop record: output stream is not open!"));
+        } else {
+          Socket.send(EVENTS.record_stop);
+          Socket.on(EVENTS.record_finished, async () => {
+            Logger.printHeader(
+              "RecordManager",
+              `Your video record saved successfully in ${this.path}`
+            );
+            this.output_stream?.close();
+            this.activated = false;
+            await Socket.closeConnection();
+            resolve();
+          });
+        }
       }
     });
   }

@@ -7,6 +7,7 @@ function timeout(ms) {
 class ContentClient {
   constructor() {
     this.mediaRecorder = undefined;
+    this.bg_alive_interval = undefined;
   }
 
   async chooseMediaStream(streamId) {
@@ -81,10 +82,17 @@ class ContentClient {
       }
     });
   }
+
+  keepAliveBackgroundClient() {
+    this.bg_alive_interval = setInterval(() => {
+      this.sendResponse("keep_alive");
+    }, 5000);
+  }
 }
 
 const CC = new ContentClient();
 CC.handleBackgroundClient();
+CC.keepAliveBackgroundClient();
 setTimeout(() => {
   const socket_port = localStorage.getItem("recorder_port");
   if (socket_port)
