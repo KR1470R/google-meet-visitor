@@ -56,14 +56,16 @@ export default class Visitor {
 
       await this.driver.get(this.target_url);
 
+      await this.provideLoginIsRequred();
+
+      await this.isICanJoinCall();
+
       if (server_port)
         await this.driver.executeScript(
           `
           localStorage.setItem("recorder_port", ${String(server_port)});
           `
         );
-
-      await this.provideLoginIsRequred();
     } catch (err) {
       throw err;
     }
@@ -78,7 +80,7 @@ export default class Visitor {
 
     await this.driver.manage().window().setRect({
       width: 800,
-      height: 600,
+      height: 1000,
       x: -1000,
       y: -1000,
     });
@@ -103,7 +105,6 @@ export default class Visitor {
 
   private async start_call() {
     Logger.printHeader("[Visitor]", `Starting call at ${this.target_url}...`);
-    await this.isICanJoinCall();
     await this.disableMediaDevices();
     await this.driver.sleep(2000);
     await this.join();
@@ -267,13 +268,17 @@ export default class Visitor {
       "Checking is google account login is required..."
     );
     const sigin_label = await this.parser.waitForElementWithInnerText(
-      "span",
-      "Sign in",
+      "button",
+      "Next",
       5000,
       false
     );
 
-    if (!sigin_label) return Promise.resolve();
+    if (!sigin_label) {
+      Logger.printHeader("[Visitor]", "Already logined.");
+      // await this.driver.sleep(60000);
+      return Promise.resolve();
+    }
 
     Logger.printHeader(
       "[Visitor]",

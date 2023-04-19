@@ -27,8 +27,8 @@ class MainApp {
   public async start() {
     try {
       await this.webDriverManager.downloadChromeDriver();
-      await Recorder.init();
       await this.visitor.init_driver(this.webDriverManager.chromedriver_path);
+      await Recorder.init();
       await Recorder.awaitForSocketReady();
       await Recorder.chooseStream();
       await this.visitor.start();
