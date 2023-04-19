@@ -2,6 +2,8 @@
 const path = require("path");
 const TerserPlugin = require("terser-webpack-plugin");
 const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
+const CopyPlugin = require("copy-webpack-plugin");
+const nodeExternals = require("webpack-node-externals");
 
 const common = {
   name: "common",
@@ -43,10 +45,17 @@ const common = {
       }),
     ],
   },
-  externals: {
-    bufferutil: "bufferutil",
-    "utf-8-validate": "utf-8-validate",
-  },
+  externals: [nodeExternals()],
+  plugins: [
+    new CopyPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, "src", "recorder", "extension"),
+          to: path.resolve(__dirname, "dist", "recorder", "extension"),
+        },
+      ],
+    }),
+  ],
 };
 
 module.exports = [common];

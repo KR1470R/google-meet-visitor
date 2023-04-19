@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
 function timeout(ms) {
   return new Promise((resolve) => {
     setTimeout(resolve, ms);

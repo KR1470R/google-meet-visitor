@@ -30,7 +30,7 @@ export default class CustomOptions extends Options {
       // "--disable-application-cache",
     ]);
 
-    const crx_path = path.resolve("dist", "recorder_extension", "recorder.crx");
+    const crx_path = path.resolve("dist", "recorder", "recorder.crx");
     Logger.printInfo(`Loading recorder extension from ${crx_path}`);
     this.addExtensions(crx_path);
 

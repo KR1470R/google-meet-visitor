@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
 function debounce(callback, ms) {
   let timer;
   return (...args) => {
@@ -131,36 +129,34 @@ class BackgroundClient {
       this.server_params?.wsc?.close();
     });
 
-    chrome.runtime.onMessage.addListener(
-      async (request, sender, sendResponse) => {
-        try {
-          request = request.message;
-          switch (request.type) {
-            case "record_register":
-              if (this.server_params.target_tab) return;
-              this.registerContentClient(request, sender);
-              break;
-            case "record_chunk":
-              const chunk = await this.downloadChunk(request.data.chunk_url);
-              this.server_params.wsc.send(chunk);
-              break;
-            case "record_finished":
-              this.sendResponse("record_finished");
-              break;
-            case "record_error":
-              throw new Error(request.error);
-            default:
-              throw new Error(
-                `Received unkown request type from content client: ${request.type}`
-              );
-          }
-        } catch (err) {
-          if (this.server_params.wsc) {
-            this.sendResponse("record_error", { error: String(err) });
-          } else throw err;
+    chrome.runtime.onMessage.addListener(async (request, sender) => {
+      try {
+        request = request.message;
+        switch (request.type) {
+          case "record_register":
+            if (this.server_params.target_tab) return;
+            this.registerContentClient(request, sender);
+            break;
+          case "record_chunk":
+            const chunk = await this.downloadChunk(request.data.chunk_url);
+            this.server_params.wsc.send(chunk);
+            break;
+          case "record_finished":
+            this.sendResponse("record_finished");
+            break;
+          case "record_error":
+            throw new Error(request.error);
+          default:
+            throw new Error(
+              `Received unkown request type from content client: ${request.type}`
+            );
         }
+      } catch (err) {
+        if (this.server_params.wsc) {
+          this.sendResponse("record_error", { error: String(err) });
+        } else throw err;
       }
-    );
+    });
   }
 
   startRecord() {
