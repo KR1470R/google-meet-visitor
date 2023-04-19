@@ -33,6 +33,7 @@ class ContentClient {
     });
     this.mediaRecorder.ondataavailable = await this.onRecordChunk.bind(this);
     this.mediaRecorder.onstop = await this.onRecordStopped.bind(this);
+
     return Promise.resolve();
   }
 
@@ -44,6 +45,10 @@ class ContentClient {
   async onRecordStopped() {
     await timeout(2000);
     this.sendResponse("record_finished");
+  }
+
+  onRecordError(error) {
+    this.sendResponse("record_error", { data: JSON.stringify(error) });
   }
 
   startRecord() {

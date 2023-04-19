@@ -44,7 +44,7 @@ ${current_date.s}.mp4`;
    */
   public async init() {
     if (!this.activated) {
-      Logger.printInfo("Recorder disabled, skip...");
+      Logger.printHeader("[Recorder]", "Disabled.");
       return;
     }
     await Socket.init();
@@ -77,7 +77,7 @@ ${current_date.s}.mp4`;
     try {
       if (this.activated) {
         await timeoutWhileCondition(() => this.ready, 30000);
-        Logger.printInfo("Recorder is ready.");
+        Logger.printHeader("[Recorder]", "Ready to start.");
       }
       return Promise.resolve();
     } catch (err) {
@@ -102,7 +102,7 @@ ${current_date.s}.mp4`;
           );
         } else {
           Socket.send(EVENTS.record_start);
-          Logger.printHeader("RecordManager", "Started recording...");
+          Logger.printHeader("[Recorder]", "Started recording...");
         }
         resolve();
       } catch (err) {
@@ -125,7 +125,7 @@ ${current_date.s}.mp4`;
           Socket.send(EVENTS.record_stop);
           Socket.on(EVENTS.record_finished, async () => {
             Logger.printHeader(
-              "RecordManager",
+              "[Recorder]",
               `Your video record saved successfully in ${this.path}`
             );
             this.output_stream?.close();
@@ -147,7 +147,7 @@ ${current_date.s}.mp4`;
     return new Promise<void>((resolve, reject) => {
       if (this.checkAvailable()) {
         Logger.printHeader(
-          "RecordManager",
+          "[Recorder]",
           "Choose stream for browser. (waiting for 1 minute...)"
         );
         let choosed = false;
@@ -155,7 +155,7 @@ ${current_date.s}.mp4`;
         Socket.on(EVENTS.record_stream_choosed, () => (choosed = true));
         timeoutWhileCondition(() => choosed, 60000)
           .then(() => {
-            Logger.printHeader("RecordManager", "Stream choosed");
+            Logger.printHeader("[Recorder]", "Stream choosed");
             resolve();
           })
           .catch((err) => reject(err));

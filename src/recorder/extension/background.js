@@ -123,7 +123,7 @@ class BackgroundClient {
 
   handleContentClient() {
     // for testing
-    chrome.server_params = this.server_params;
+    // chrome.server_params = this.server_params;
 
     chrome.tabs.onRemoved.addListener(() => {
       this.server_params?.wsc?.close();
