@@ -111,7 +111,7 @@ export function getDriverPlatformName(): string | null {
   const available_platforms = {
     linux: "linux64",
     darwin: "mac_arm64",
-    win32: "win32.exe",
+    win32: "win32",
   };
   const target_platform =
     available_platforms?.[process.platform as keyof typeof available_platforms];
@@ -202,9 +202,9 @@ export function timeoutWhileCondition(
 
 export const Config = new DotEnvConfig();
 
-Config.init();
-
 export const Events = new EventEmitterExtended();
+
+Config.init();
 
 export const Socket = new WSServer();
 
