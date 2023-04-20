@@ -3,3 +3,5 @@ node_modules
 dist
 .env
 src/recorder/extension/key.pem
+src/drivers
+!src/drivers/WebDriverMananger.ts
