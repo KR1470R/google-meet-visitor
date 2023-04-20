@@ -1,12 +1,12 @@
 {
   "name": "google-meet-visitor",
-  "version": "6.0.7",
+  "version": "6.0.8",
   "description": "Passive agent of Google Meet that visits and records calls without interaction with user.",
   "main": "index.js",
   "type": "commonjs",
   "scripts": {
-    "clear": "find ./dist -type f -not -path ./dist/records -delete",
-    "build": "webpack --config-name common && mkdir -p ./dist/records",
+    "clear": "node ./clear_dist.mjs",
+    "build": "webpack --config-name common",
     "build_crx": "node ./dist/build_crx.js",
     "make": "npm run clear ; npm run build && npm run build_crx",
     "start": "node ./dist/app.js"

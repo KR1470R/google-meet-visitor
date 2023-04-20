@@ -1,7 +1,7 @@
 
 
 <div align="center">
-<h1>google-meet-visitor <sup>6.0.7</sup></h1>
+<h1>google-meet-visitor <sup>6.0.8</sup></h1>
 <img  src="./assets/logo.png">
 </div>
 
@@ -79,7 +79,6 @@ Well, on the initial stages of the development that was thought that visitor sho
 
 # TODO
 - correct output videos format
-- ensure support for windows
 - make alternative configuration of google-meet-visitor - by using flags in the command line.
 - test all cases
 
