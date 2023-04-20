@@ -8,7 +8,7 @@
     "clear": "node ./clear_dist.mjs",
     "build": "webpack --config-name common",
     "build_crx": "node ./dist/build_crx.js",
-    "make": "npm run clear ; npm run build && npm run build_crx",
+    "make": "npm run clear && npm run build && npm run build_crx",
     "start": "node ./dist/app.js"
   },
   "repository": {
