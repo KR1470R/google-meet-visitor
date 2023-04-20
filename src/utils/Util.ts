@@ -202,9 +202,9 @@ export function timeoutWhileCondition(
 
 export const Config = new DotEnvConfig();
 
-Config.init();
-
 export const Events = new EventEmitterExtended();
+
+Config.init();
 
 export const Socket = new WSServer();
 
