@@ -17,7 +17,7 @@ export default class WebDriverManager {
   public async init() {
     const version = (await this.getChromeVersion()).replace(/\./g, "-");
     this.file_name = this.chromedriver_name + "_" + version;
-    this.chromedriver_path = path.resolve("src", "drivers", this.file_name!);
+    this.chromedriver_path = binary_windize(path.resolve("src", "drivers", this.file_name!));
   }
 
   public isWebDriverInstalled() {
@@ -82,7 +82,7 @@ export default class WebDriverManager {
           fs.rmSync(zip_path);
           fs.rename(
             path.resolve("src", "drivers", binary_windize("chromedriver")),
-            binary_windize(this.chromedriver_path),
+            this.chromedriver_path,
             on_rename
           );
         }
