@@ -132,7 +132,7 @@ export default class Visitor {
       this.log_header,
       `Staying at call till ${predictFinishDate(
         minutesToMs(minutes)
-      )}(${minutes} minutes)`
+      )}(${minutes} minute${minutes > 1 ? "s" : ""})`
     );
 
     let ms = minutesToMs(minutes);
@@ -297,7 +297,6 @@ export default class Visitor {
 
     if (!sigin_label) {
       Logger.printInfo(this.log_header, "Already logined.");
-      // await this.driver.sleep(60000);
       return Promise.resolve();
     }
 

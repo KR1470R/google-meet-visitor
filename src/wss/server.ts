@@ -50,7 +50,7 @@ export default class WSServer {
           const port = this.getAddressKey("port");
           Logger.printInfo(
             this.log_header,
-            `Socket is open for client connection at ${address}:${port}.`
+            `Open for client connection at ${address}:${port}.`
           );
           resolve();
         });

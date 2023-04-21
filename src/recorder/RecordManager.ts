@@ -85,8 +85,12 @@ ${current_date.s}.mp4`;
    */
   public async awaitForSocketReady() {
     try {
+      Logger.printInfo(
+        this.log_header,
+        "Awaiting for 1 minute while client connect."
+      );
       if (this.activated) {
-        await timeoutWhileCondition(() => this.ready, 30000);
+        await timeoutWhileCondition(() => this.ready, 60000);
         Logger.printInfo(this.log_header, "Ready to start.");
       }
       return Promise.resolve();
