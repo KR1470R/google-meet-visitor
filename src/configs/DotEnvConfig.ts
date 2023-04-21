@@ -30,7 +30,7 @@ export default class DotEnvConfig {
 
     if (error) {
       if (throwable) {
-        Events.emitCheckable(EVENTS.exit, error);
+        Events.emitCheckable(EVENTS.exit, error, "DotEnvConfig");
         process.exit(1);
       } else return null;
     } else {

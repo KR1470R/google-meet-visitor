@@ -6,6 +6,8 @@ import { EVENTS } from "../models/Models";
  * Helper for parse elements on page.
  */
 export default class Parser {
+  private log_header = "Parser";
+
   constructor(private driver: WebDriver) {}
 
   /**
@@ -22,7 +24,8 @@ export default class Parser {
     } catch (err) {
       Events.emitCheckable(
         EVENTS.exit,
-        `ParserError: Element ${name} not found!`
+        `ParserError: Element ${name} not found!`,
+        this.log_header
       );
       return Promise.resolve(undefined);
     }
@@ -49,7 +52,8 @@ export default class Parser {
       if (throwable) {
         Events.emitCheckable(
           EVENTS.exit,
-          `ParserError: Element <${name}> with text "${text}" not found!`
+          `ParserError: Element <${name}> with text "${text}" not found!`,
+          this.log_header
         );
       }
 
@@ -58,7 +62,8 @@ export default class Parser {
       if (throwable) {
         Events.emitCheckable(
           EVENTS.exit,
-          `ParserError: Element <${name}> with text "${text}" not found!`
+          `ParserError: Element <${name}> with text "${text}" not found!`,
+          this.log_header
         );
       }
       return Promise.resolve(undefined);
@@ -110,7 +115,8 @@ export default class Parser {
       if (throwable) {
         Events.emitCheckable(
           EVENTS.exit,
-          `ParserError: Timeot of waiting for element '${xpath}'!`
+          `ParserError: Timeot of waiting for element '${xpath}'!`,
+          this.log_header
         );
       }
       return Promise.resolve(undefined);
@@ -131,7 +137,8 @@ export default class Parser {
           if (throwable) {
             Events.emitCheckable(
               EVENTS.exit,
-              `ParserError: Element <${name}> with text "${text}" not found!`
+              `ParserError: Element <${name}> with text "${text}" not found!`,
+              this.log_header
             );
             await this.driver.sleep(2000);
           }

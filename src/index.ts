@@ -12,6 +12,7 @@ import { EVENTS } from "models/Models";
 class MainApp {
   private webDriverManager: WebDriverManager;
   private visitor: Visitor;
+  private log_header = "index";
 
   constructor() {
     // @TODO Remove this and make exit from session properly
@@ -28,15 +29,16 @@ class MainApp {
     try {
       await this.webDriverManager.init();
       await this.webDriverManager.downloadChromeDriver();
-      await this.visitor.init_driver(this.webDriverManager.chromedriver_path);
       await Recorder.init();
+      await this.visitor.init_driver(this.webDriverManager.chromedriver_path);
       await Recorder.awaitForSocketReady();
       await Recorder.chooseStream();
       await this.visitor.start();
     } catch (err) {
-      Events.emit(
+      Events.emitCheckable(
         EVENTS.exit,
-        `Failed to start: ${(err as Error).message || err}`
+        `Failed to start: ${(err as Error).message || err}`,
+        this.log_header
       );
     }
   }
@@ -45,7 +47,7 @@ class MainApp {
     Events.on(EVENTS.exit, async (error?: string) => {
       let exitCode = 0;
       if (error) {
-        Logger.printError(error);
+        Logger.printFatal(this.log_header, error);
         exitCode = 1;
       }
 

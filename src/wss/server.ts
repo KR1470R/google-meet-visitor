@@ -14,6 +14,7 @@ export default class WSServer {
   private listeners: Record<string, (data?: RecorderData | Buffer) => void> =
     {};
   private shouldClose = false;
+  private log_header = "Socket";
 
   constructor() {}
 
@@ -27,18 +28,19 @@ export default class WSServer {
         this.server = new WebSocketServer(this.config);
 
         this.server.on("connection", (ws: WebSocket) => {
-          Logger.printSuccess("Client connected to the server!");
+          Logger.printInfo(this.log_header, "Client connected to the server!");
           this.connected = ws;
           ws.on("message", (message: Buffer) => this.handleResponse(message));
           ws.on("error", (err) => {
-            Events.emitCheckable(EVENTS.exit, err);
+            Events.emitCheckable(EVENTS.exit, err, this.log_header);
           });
           ws.on("close", (code: number, reason: Buffer) => {
             const reason_translated = translateResponse(reason);
             if (!this.shouldClose) {
-              Events.emit(
+              Events.emitCheckable(
                 EVENTS.exit,
-                `Connection with client closed suddenly: ${reason_translated}(status: ${code})`
+                `Connection with client closed suddenly: ${reason_translated}(status: ${code})`,
+                this.log_header
               );
             }
           });
@@ -46,12 +48,15 @@ export default class WSServer {
         this.server.on("listening", () => {
           const address = this.getAddressKey("address");
           const port = this.getAddressKey("port");
-          Logger.printSuccess(`Server is running on ${address}:${port}`);
+          Logger.printInfo(
+            this.log_header,
+            `Socket is open for client connection at ${address}:${port}.`
+          );
           resolve();
         });
         this.server.on("close", () => {
-          Logger.printInfo("Socket closed.");
-          if (!this.shouldClose) Events.emit(EVENTS.exit);
+          Logger.printInfo(this.log_header, "Closed.");
+          if (!this.shouldClose) Events.emitCheckable(EVENTS.exit);
         });
       });
     });
@@ -64,9 +69,10 @@ export default class WSServer {
     if (Buffer.isBuffer(translated)) {
       const target_listener = this.listeners?.[EVENTS.record_chunk];
       if (!target_listener) {
-        Events.emit(
+        Events.emitCheckable(
           EVENTS.exit,
-          `Unkown received message type when loaded chunks`
+          `Unkown received message type when loaded chunks`,
+          this.log_header
         );
         return;
       }
@@ -75,9 +81,10 @@ export default class WSServer {
       const target_listener: (data?: RecorderData) => void | undefined =
         this.listeners?.[translated!.type];
       if (!target_listener) {
-        Events.emit(
+        Events.emitCheckable(
           EVENTS.exit,
-          `Unkown received message type: ${translated.type}`
+          `Unkown received message type: ${translated.type}`,
+          this.log_header
         );
         return;
       }
@@ -89,7 +96,7 @@ export default class WSServer {
   public closeConnection() {
     return new Promise<void>((resolve) => {
       if (this.isConnected()) {
-        Logger.printInfo("Closing socket connection");
+        Logger.printInfo(this.log_header, "Closing connection...");
         this.shouldClose = true;
         this.connected!.close();
         this.connected = undefined;
@@ -102,7 +109,10 @@ export default class WSServer {
 
   public send(message: string) {
     if (!this.isConnected()) {
-      Logger.printWarning("No connected clients. Rejecting send message.");
+      Logger.printWarning(
+        this.log_header,
+        "No connected clients. Rejecting send message."
+      );
       return;
     }
     this.connected!.send(message);

@@ -1,6 +1,6 @@
 {
   "name": "google-meet-visitor",
-  "version": "6.1.0",
+  "version": "6.1.1",
   "description": "Passive agent of Google Meet that visits and records calls without interaction with user.",
   "main": "index.js",
   "type": "commonjs",
@@ -47,6 +47,7 @@
   },
   "dependencies": {
     "@types/events": "^3.0.0",
+    "@types/pino": "^7.0.5",
     "@types/selenium-webdriver": "^4.1.13",
     "@types/ws": "^8.5.4",
     "crx": "^5.0.1",
@@ -54,6 +55,8 @@
     "event": "^1.0.0",
     "find-chrome-version": "^2.2.0",
     "node-stream-zip": "^1.15.0",
+    "pino": "^8.11.0",
+    "pino-pretty": "^10.0.0",
     "selenium-webdriver": "^4.8.1",
     "ws": "^8.13.0"
   }

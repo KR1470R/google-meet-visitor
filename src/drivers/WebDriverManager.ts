@@ -6,6 +6,7 @@ import StreamZip from "node-stream-zip";
 import { getDriverPlatformName, modeNum, binary_windize } from "../utils/Util";
 
 export default class WebDriverManager {
+  private log_header = "WebDriverManager";
   public chromedriver_name = getDriverPlatformName() as string;
   public chromedriver_path!: string;
   public file_name!: string;
@@ -17,7 +18,9 @@ export default class WebDriverManager {
   public async init() {
     const version = (await this.getChromeVersion()).replace(/\./g, "-");
     this.file_name = this.chromedriver_name + "_" + version;
-    this.chromedriver_path = binary_windize(path.resolve("src", "drivers", this.file_name!));
+    this.chromedriver_path = binary_windize(
+      path.resolve("src", "drivers", this.file_name!)
+    );
   }
 
   public isWebDriverInstalled() {
@@ -27,13 +30,17 @@ export default class WebDriverManager {
 
   public async downloadChromeDriver() {
     if (this.isWebDriverInstalled()) {
-      Logger.printInfo("required chromedriver is exist. skipping");
+      Logger.printInfo(
+        this.log_header,
+        "Required chromedriver is exist. skipping"
+      );
       return;
     }
     const url = "https://chromedriver.storage.googleapis.com/";
     const target_version = await this.getLatestChromeVersion();
     const zip_url = `${url}${target_version}/${this.chromedriver_name}.zip`;
     Logger.printInfo(
+      this.log_header,
       `Trying to fetch zip with chromedriver of your chrome version ${zip_url}...`
     );
     const response = await fetch(zip_url);
@@ -43,7 +50,7 @@ export default class WebDriverManager {
       );
     }
 
-    Logger.printInfo("downloading...");
+    Logger.printInfo(this.log_header, "Downloading...");
     const zip_buffer = Buffer.from(await response.arrayBuffer());
     const zip_path = path.resolve(
       "src",
@@ -68,7 +75,7 @@ export default class WebDriverManager {
             (err: Error | null) => {
               if (err) this.throwError(String(err));
               else {
-                Logger.printSuccess("finished successfully!");
+                Logger.printInfo(this.log_header, "Finished successfully!");
                 resolve();
               }
             }
@@ -76,7 +83,7 @@ export default class WebDriverManager {
         }
       };
       const on_extract = (error: Error | null) => {
-        if (error) this.throwError(`ZipExtractError: ${error}`);
+        if (error) this.throwError(`Error in extraction zip: ${error}`);
         else {
           zip_stream.close();
           fs.rmSync(zip_path);
@@ -88,7 +95,7 @@ export default class WebDriverManager {
         }
       };
       zip_stream.on("ready", () => {
-        Logger.printInfo("extracting zip...");
+        Logger.printInfo(this.log_header, "Extracting zip...");
         zip_stream.extract(null, path.resolve("src", "drivers"), on_extract);
       });
       zip_stream.on("error", (error: Error) => {
@@ -117,7 +124,7 @@ export default class WebDriverManager {
   }
 
   private throwError(error: string) {
-    Logger.printError(error);
+    Logger.printError(this.log_header, error);
     process.exit(1);
   }
 }

@@ -7,9 +7,13 @@ export default class EventEmitterExtended extends EventEmitter {
     super();
   }
 
-  public emitCheckable(event: string, content?: string | Error) {
+  public emitCheckable(
+    event: string,
+    content?: string | Error,
+    log_header = "EventEmmiter"
+  ) {
     if (!this.listenerCount(event)) {
-      if (content) Logger.printError(String(content));
+      if (content) Logger.printFatal(log_header, String(content));
       process.exit(1);
     } else this.emit(event, String(content));
   }

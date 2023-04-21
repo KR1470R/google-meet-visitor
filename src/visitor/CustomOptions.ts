@@ -8,6 +8,8 @@ import * as path from "node:path";
  * Defines parameters for browser specified by user.
  */
 export default class CustomOptions extends Options {
+  private log_header = "ChromeOptions";
+
   constructor() {
     super();
     //@ts-ignore
@@ -31,7 +33,10 @@ export default class CustomOptions extends Options {
     ]);
 
     const crx_path = path.resolve("dist", "recorder", "recorder.crx");
-    Logger.printInfo(`Loading recorder extension from ${crx_path}`);
+    Logger.printInfo(
+      this.log_header,
+      `Loading recorder extension from ${crx_path}.`
+    );
     this.addExtensions(crx_path);
 
     const user_data_dir_path = Config.get_param("USER_DATA_DIR");
@@ -42,12 +47,14 @@ export default class CustomOptions extends Options {
     }
 
     if (Config.get_param("MINIMIZED", false) === "true") {
-      Logger.printInfo("running browser in background...");
-    } else Logger.printInfo("running browser in foreground");
+      Logger.printInfo(this.log_header, "Running browser in background.");
+    } else Logger.printInfo(this.log_header, "Running browser in foreground.");
 
     if (Config.get_param("MUTE", false) === "true") {
-      Logger.printInfo("muted audio");
+      Logger.printInfo(this.log_header, "Audio is muted.");
       this.addArguments("--mute-audio");
+    } else {
+      Logger.printInfo(this.log_header, "Audio is unmuted.");
     }
   }
 }

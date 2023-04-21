@@ -33,6 +33,8 @@ export default class Visitor {
   private pending_shutdown = false;
   private alive = false;
 
+  private log_header = "Visitor";
+
   constructor(target_url: string) {
     this.target_url = target_url;
 
@@ -60,12 +62,14 @@ export default class Visitor {
 
       await this.isICanJoinCall();
 
-      if (server_port)
+      if (server_port) {
+        Logger.printInfo(this.log_header, "Sending server port to extension");
         await this.driver.executeScript(
           `
           localStorage.setItem("recorder_port", ${String(server_port)});
           `
         );
+      } else Logger.printWarning(this.log_header, "Server port is null");
     } catch (err) {
       throw err;
     }
@@ -76,7 +80,7 @@ export default class Visitor {
 
     await this.driver.sleep(2000);
 
-    Events.emit(EVENTS.visitor_start);
+    Events.emitCheckable(EVENTS.visitor_start);
 
     await this.driver.manage().window().setRect({
       width: 800,
@@ -97,34 +101,35 @@ export default class Visitor {
 
     await Recorder.stopRecord();
 
-    Logger.printSuccess("successfully!");
+    Logger.printInfo(this.log_header, "Finished task successfully!");
     this.driver.sleep(2000);
 
     await this.shutdown();
   }
 
   private async start_call() {
-    Logger.printHeader("[Visitor]", `Starting call at ${this.target_url}...`);
+    Logger.printInfo(this.log_header, `Starting call at ${this.target_url}...`);
     await this.disableMediaDevices();
     await this.driver.sleep(2000);
     await this.join();
     await this.driver.sleep(2000);
     await this.stayAtCallWhile();
     await this.driver.sleep(2000);
-    Events.emit(EVENTS.visitor_stop);
+    Events.emitCheckable(EVENTS.visitor_stop);
   }
 
   private async stayAtCallWhile() {
     const minutes = parseInt(Config.get_param("CALL_TIMER_MINUTES")!);
     if (Number.isNaN(minutes)) {
-      Events.emit(
+      Events.emitCheckable(
         EVENTS.exit,
-        `Failed in parsing timer input: '${minutes}' is not a number!`
+        `Failed in parsing timer input: '${minutes}' is not a number!`,
+        this.log_header
       );
     }
 
-    Logger.printHeader(
-      "[Visitor]",
+    Logger.printInfo(
+      this.log_header,
       `Staying at call till ${predictFinishDate(
         minutesToMs(minutes)
       )}(${minutes} minutes)`
@@ -154,7 +159,7 @@ export default class Visitor {
       }
     }
 
-    Logger.printHeader("[Visitor]", "Done! Leaving...");
+    Logger.printInfo(this.log_header, "Done! Leaving...");
     const leave_button = await this.parser.getElementByTagName(
       "button[aria-label='Leave call'][role=button]"
     );
@@ -163,7 +168,7 @@ export default class Visitor {
   }
 
   private async join() {
-    Logger.printHeader("[Visitor]", "Joining call...");
+    Logger.printInfo(this.log_header, "Joining call...");
 
     const button_join = await this.parser.waitFor(
       "//*[contains(text(), 'Join now')]/parent::button",
@@ -174,10 +179,13 @@ export default class Visitor {
     if (button_join) {
       await this.driver.sleep(2000);
       await button_join?.click();
-      Logger.printHeader("[Visitor]", "Joined!");
+      Logger.printInfo(this.log_header, "Joined!");
     } else {
-      Logger.printError("Couldn't find join button!");
-      Logger.printWarning("checking is user has permissions to join...");
+      Logger.printError(this.log_header, "Couldn't find join button!");
+      Logger.printWarning(
+        this.log_header,
+        "Checking is user has permissions to join..."
+      );
       const ask_to_join = await this.parser.waitFor(
         "//*[contains(text(), 'Ask to join')]/parent::button",
         2000,
@@ -185,20 +193,26 @@ export default class Visitor {
       );
 
       if (ask_to_join)
-        Events.emit(
+        Events.emitCheckable(
           EVENTS.exit,
-          "You cannot join this call, because you need to ask."
+          "You cannot join this call, because you need to ask.",
+          this.log_header
         );
-      else Events.emit(EVENTS.exit, "Uknown error to join this call");
+      else
+        Events.emitCheckable(
+          EVENTS.exit,
+          "Uknown error to join this call",
+          this.log_header
+        );
 
       this.driver.sleep(2000);
     }
   }
 
   private async disableMediaDevices() {
-    Logger.printHeader("[Visitor]", "Disabling media devices at call...");
+    Logger.printInfo(this.log_header, "Disabling media devices at call...");
 
-    Logger.printInfo("disabling camera...");
+    Logger.printInfo(this.log_header, "Disabling camera...");
     await this.driver
       .actions()
       .keyDown(Key.CONTROL)
@@ -208,7 +222,7 @@ export default class Visitor {
 
     await this.driver.sleep(1000);
 
-    Logger.printInfo("disabling microphone...");
+    Logger.printInfo(this.log_header, "Disabling microphone...");
     await this.driver
       .actions()
       .keyDown(Key.CONTROL)
@@ -222,7 +236,10 @@ export default class Visitor {
    * @returns
    */
   private async chooseFirstAccount() {
-    Logger.printHeader("[chooseFirstAccount]");
+    Logger.printInfo(
+      this.log_header,
+      "Choosing first account in sign in form."
+    );
     try {
       await this.driver.sleep(2000);
       const account_button = await this.parser.getElementByTagName(
@@ -230,20 +247,24 @@ export default class Visitor {
       );
       if (account_button) await account_button.click();
     } catch (err) {
-      Logger.printWarning((err as Error).message);
+      Logger.printWarning(this.log_header, (err as Error).message);
       return Promise.resolve();
     }
   }
 
   private async isICanJoinCall() {
-    Logger.printHeader("[Visitor]", "Checking can i join call...");
+    Logger.printInfo(this.log_header, "Checking can i join call...");
     const returnToCall = await this.parser.waitFor(
       "//*[contains(text(), 'Return to home screen')]/parent::button",
       5000,
       false
     );
     if (returnToCall) {
-      Events.emit(EVENTS.exit, "I cannot join this call!");
+      Events.emitCheckable(
+        EVENTS.exit,
+        "I cannot join this call!",
+        this.log_header
+      );
       await this.driver.sleep(2000);
     } else return Promise.resolve();
   }
@@ -253,7 +274,7 @@ export default class Visitor {
 
     this.pending_shutdown = true;
 
-    Logger.printHeader("[Visitor]", "Shutdown.");
+    Logger.printInfo(this.log_header, "Shutdown.");
 
     await this.driver.quit();
   }
@@ -263,8 +284,8 @@ export default class Visitor {
   }
 
   public async provideLoginIsRequred() {
-    Logger.printHeader(
-      "[Visitor]",
+    Logger.printInfo(
+      this.log_header,
       "Checking is google account login is required..."
     );
     const sigin_label = await this.parser.waitForElementWithInnerText(
@@ -275,13 +296,13 @@ export default class Visitor {
     );
 
     if (!sigin_label) {
-      Logger.printHeader("[Visitor]", "Already logined.");
+      Logger.printInfo(this.log_header, "Already logined.");
       // await this.driver.sleep(60000);
       return Promise.resolve();
     }
 
-    Logger.printHeader(
-      "[Visitor]",
+    Logger.printInfo(
+      this.log_header,
       "Sign in required, waiting for 5 minutes untill the user perform login..."
     );
 
