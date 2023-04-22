@@ -1,6 +1,6 @@
 import Visitor from "./visitor/Visitor";
 import { exec } from "child_process";
-import { Events, Recorder, Config } from "./utils/Util";
+import { Events, Recorder, Config, Socket } from "./utils/Util";
 import Logger from "./utils/Logger";
 import WebDriverManager from "./drivers/WebDriverManager";
 import { EVENTS } from "models/Models";
@@ -29,8 +29,9 @@ class MainApp {
     try {
       await this.webDriverManager.init();
       await this.webDriverManager.downloadChromeDriver();
-      await Recorder.init();
       await this.visitor.init_driver(this.webDriverManager.chromedriver_path);
+      await Socket.init();
+      await Recorder.init();
       await Recorder.awaitForSocketReady();
       await Recorder.chooseStream();
       await this.visitor.start();

@@ -1,7 +1,7 @@
 
 
 <div align="center">
-<h1>google-meet-visitor <sup>6.1.2</sup></h1>
+<h1>google-meet-visitor <sup>6.1.3</sup></h1>
 <img  src="./assets/logo.png">
 </div>
 
@@ -45,7 +45,7 @@ All the config parameters are stored in the .env file in root of the project. Al
 ***CALL_TIMER_MINUTES**** - how many minutes the visitor must stay at call\
 ***MINIMIZED*** - true or false. If true, the window of the browser will be minimized and if false - maximazed. By default false.\
 ***MUTE*** - true or false. If true, the browser will be totally muted. By default false.\
-***RECORD_TAB*** - true or false. If true, the visitor will record the call. By default false. [See here][3.4].\
+***RECORD_TAB*** - true or false. If true, the visitor will record the call. By default false.\
 ***OUTPUT_RECORD_TAB*** - custom path of output records. By default is `dist/records/` in the root.
 
 ## Run
@@ -78,9 +78,7 @@ Well, on the initial stages of the development that was thought that visitor sho
 ![enter image description here](https://camo.githubusercontent.com/d5b96d374ea9039f533b8fbb39e8e56964e9281dbf80315b7cef7242a1a21512/68747470733a2f2f6d6972726f72732e6372656174697665636f6d6d6f6e732e6f72672f70726573736b69742f627574746f6e732f38387833312f7376672f62792d6e632e737667)
 
 # TODO
-- correct output videos format
 - make alternative configuration of google-meet-visitor - by using flags in the command line.
-- test all cases
 
 [1]:https://github.com/KR1470R/google-meet-visitor#what-it-does
 [2]:https://github.com/KR1470R/google-meet-visitor#requirements

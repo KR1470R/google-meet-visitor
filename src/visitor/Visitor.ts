@@ -310,5 +310,7 @@ export default class Visitor {
         (await this.driver.getCurrentUrl()) === this.target_url).bind(this),
       300000
     );
+
+    Logger.printInfo(this.log_header, "Logined.");
   }
 }

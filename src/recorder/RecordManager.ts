@@ -43,12 +43,11 @@ ${current_date.s}.mp4`;
    * Init all required options, events and socket.
    * @returns Promise<void>
    */
-  public async init() {
+  public init() {
     if (!this.activated) {
       Logger.printInfo(this.log_header, "Disabled.");
       return;
     }
-    await Socket.init();
 
     Socket.on(EVENTS.record_ready, () => {
       this.ready = true;
