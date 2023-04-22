@@ -79,6 +79,9 @@ Well, on the initial stages of the development that was thought that visitor sho
 
 # TODO
 - make alternative configuration of google-meet-visitor - by using flags in the command line.
+- fix error when starting visitor with already opened chrome.
+- check for headless mode.
+- try to automate media source choice.
 
 [1]:https://github.com/KR1470R/google-meet-visitor#what-it-does
 [2]:https://github.com/KR1470R/google-meet-visitor#requirements

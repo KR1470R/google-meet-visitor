@@ -60,7 +60,9 @@ export default class Visitor {
 
       await this.provideLoginIsRequred();
 
-      await this.isICanJoinCall();
+      await timer(100000000);
+
+      // await this.isICanJoinCall();
 
       if (server_port) {
         Logger.printInfo(this.log_header, "Sending server port to extension");
