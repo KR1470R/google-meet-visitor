@@ -1,6 +1,6 @@
 import { WebSocketServer, AddressInfo, WebSocket } from "ws";
 import Logger from "../utils/Logger";
-import { Events, translateResponse } from "../utils/Util";
+import { Config, Events, translateResponse } from "../utils/Util";
 import { EVENTS, RecorderData } from "../models/Models";
 import findFreePort from "../lib/findFreePort";
 
@@ -20,45 +20,52 @@ export default class WSServer {
 
   public init() {
     return new Promise<void>((resolve) => {
-      findFreePort("localhost").then((free_port: number | number[]) => {
-        this.config = {
-          host: "localhost",
-          port: free_port as number,
-        };
-        this.server = new WebSocketServer(this.config);
+      if (Config.get_param("RECORD_TAB", false) !== "true") {
+        resolve();
+      } else {
+        findFreePort("localhost").then((free_port: number | number[]) => {
+          this.config = {
+            host: "localhost",
+            port: free_port as number,
+          };
+          this.server = new WebSocketServer(this.config);
 
-        this.server.on("connection", (ws: WebSocket) => {
-          Logger.printInfo(this.log_header, "Client connected to the server!");
-          this.connected = ws;
-          ws.on("message", (message: Buffer) => this.handleResponse(message));
-          ws.on("error", (err) => {
-            Events.emitCheckable(EVENTS.exit, err, this.log_header);
+          this.server.on("connection", (ws: WebSocket) => {
+            Logger.printInfo(
+              this.log_header,
+              "Client connected to the server!"
+            );
+            this.connected = ws;
+            ws.on("message", (message: Buffer) => this.handleResponse(message));
+            ws.on("error", (err) => {
+              Events.emitCheckable(EVENTS.exit, err, this.log_header);
+            });
+            ws.on("close", (code: number, reason: Buffer) => {
+              const reason_translated = translateResponse(reason);
+              if (!this.shouldClose) {
+                Events.emitCheckable(
+                  EVENTS.exit,
+                  `Connection with client closed suddenly: ${reason_translated}(status: ${code})`,
+                  this.log_header
+                );
+              }
+            });
           });
-          ws.on("close", (code: number, reason: Buffer) => {
-            const reason_translated = translateResponse(reason);
-            if (!this.shouldClose) {
-              Events.emitCheckable(
-                EVENTS.exit,
-                `Connection with client closed suddenly: ${reason_translated}(status: ${code})`,
-                this.log_header
-              );
-            }
+          this.server.on("listening", () => {
+            const address = this.getAddressKey("address");
+            const port = this.getAddressKey("port");
+            Logger.printInfo(
+              this.log_header,
+              `Open for client connection at ${address}:${port}.`
+            );
+            resolve();
+          });
+          this.server.on("close", () => {
+            Logger.printInfo(this.log_header, "Closed.");
+            if (!this.shouldClose) Events.emitCheckable(EVENTS.exit);
           });
         });
-        this.server.on("listening", () => {
-          const address = this.getAddressKey("address");
-          const port = this.getAddressKey("port");
-          Logger.printInfo(
-            this.log_header,
-            `Open for client connection at ${address}:${port}.`
-          );
-          resolve();
-        });
-        this.server.on("close", () => {
-          Logger.printInfo(this.log_header, "Closed.");
-          if (!this.shouldClose) Events.emitCheckable(EVENTS.exit);
-        });
-      });
+      }
     });
   }
 

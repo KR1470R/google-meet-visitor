@@ -1,7 +1,7 @@
 
 
 <div align="center">
-<h1>google-meet-visitor <sup>6.1.4</sup></h1>
+<h1>google-meet-visitor <sup>6.1.5</sup></h1>
 <img  src="./assets/logo.png">
 </div>
 
@@ -80,7 +80,6 @@ Well, on the initial stages of the development that was thought that visitor sho
 # TODO
 - make alternative configuration of google-meet-visitor - by using flags in the command line.
 - fix error when starting visitor with already opened chrome.
-- check for headless mode.
 - try to automate media source choice.
 
 [1]:https://github.com/KR1470R/google-meet-visitor#what-it-does

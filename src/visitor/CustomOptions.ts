@@ -14,21 +14,24 @@ export default class CustomOptions extends Options {
     super();
     //@ts-ignore
     this.addArguments([
+      "--disable-blink-features=AutomationControlled",
+      "--use-fake-ui-for-media-stream",
+      "--hide-crash-restore-bubble",
+      "--disable-notifications",
+      /*
+        testing params
+      */
       // "--no-sandbox",
       // "--disable-gpu",
       // "--disable-infobars",
       // "--disable-extensions",
       // "--disable-setuid-sandbox",
-      "--use-fake-ui-for-media-stream",
-      "--disable-notifications",
       // "--disable-browser-side-navigation",
       // "--use-fake-device-for-media-stream",
       // "--disable-features=site-per-process",
-      "--disable-blink-features=AutomationControlled",
       // "--disable-web-security",
       // "--allow-running-insecure-content",
       // "--window-size=1920,1080",
-      "--hide-crash-restore-bubble",
       // "--disable-application-cache",
     ]);
 
