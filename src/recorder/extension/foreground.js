@@ -24,6 +24,7 @@ class ContentClient {
           chromeMediaSourceId: streamId,
         },
       },
+      preferCurrentTab: true,
     });
 
     const mediaStream = new MediaStream(stream);

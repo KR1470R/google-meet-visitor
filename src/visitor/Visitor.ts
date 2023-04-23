@@ -56,13 +56,11 @@ export default class Visitor {
 
       this.parser = new Parser(this.driver);
 
-      await this.driver.get(this.target_url);
-
       await this.provideLoginIsRequred();
 
-      await timer(100000000);
+      await this.driver.get(this.target_url);
 
-      // await this.isICanJoinCall();
+      await this.isICanJoinCall();
 
       if (server_port) {
         Logger.printInfo(this.log_header, "Sending server port to extension");
@@ -87,8 +85,6 @@ export default class Visitor {
     await this.driver.manage().window().setRect({
       width: 800,
       height: 1000,
-      x: -1000,
-      y: -1000,
     });
 
     if (
@@ -290,14 +286,17 @@ export default class Visitor {
       this.log_header,
       "Checking is google account login is required..."
     );
-    const sigin_label = await this.parser.waitForElementWithInnerText(
-      "button",
-      "Next",
+
+    await this.driver.get("https://apps.google.com/intl/en/meet/");
+
+    const sigin_btn = await this.parser.waitForElementWithInnerText(
+      "a",
+      "Sign in",
       5000,
       false
     );
 
-    if (!sigin_label) {
+    if (!sigin_btn) {
       Logger.printInfo(this.log_header, "Already logined.");
       return Promise.resolve();
     }
@@ -307,9 +306,13 @@ export default class Visitor {
       "Sign in required, waiting for 5 minutes untill the user perform login..."
     );
 
+    await sigin_btn.click();
+
     await timeoutWhileCondition(
       (async () =>
-        (await this.driver.getCurrentUrl()) === this.target_url).bind(this),
+        (
+          await this.driver.getCurrentUrl()
+        ).includes("https://meet.google.com/")).bind(this),
       300000
     );
 

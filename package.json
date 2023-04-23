@@ -1,6 +1,6 @@
 {
   "name": "google-meet-visitor",
-  "version": "6.1.3",
+  "version": "6.1.4",
   "description": "Passive agent of Google Meet that visits and records calls without interaction with user.",
   "main": "index.js",
   "type": "commonjs",
