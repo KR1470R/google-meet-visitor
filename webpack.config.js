@@ -9,8 +9,8 @@ const common = {
   name: "common",
   mode: "production",
   entry: {
-    app: "./src/index.ts",
-    build_crx: "./src/lib/build_crx.ts",
+    app: path.resolve(__dirname, "src","index.ts"),
+    build_crx: path.resolve(__dirname, "src", "lib", "build_crx.ts"),
   },
   target: "node",
   output: {
@@ -32,7 +32,7 @@ const common = {
   },
   resolve: {
     extensions: [".ts", ".js"],
-    plugins: [new TsconfigPathsPlugin({ configFile: "./tsconfig.json" })],
+    plugins: [new TsconfigPathsPlugin({ configFile: path.resolve(__dirname, "tsconfig.json") })],
   },
   optimization: {
     minimize: true,
