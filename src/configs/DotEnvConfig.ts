@@ -9,17 +9,24 @@ dotenv.config();
  * Manager of .env config.
  */
 export default class DotEnvConfig {
-  constructor() {}
+  private static instance?: DotEnvConfig;
 
-  public init() {
+  private constructor() {}
+
+  public static init() {
     const important_params: Array<Uppercase<string>> = [
       "USER_DATA_DIR",
       "TARGET_CALL_LINK",
       "CALL_TIMER_MINUTES",
     ];
+
+    this.instance = this.instance || new DotEnvConfig();
+
     important_params.forEach(
-      (param: Uppercase<string>) => this.get_param(param)!
+      (param: Uppercase<string>) => this.instance!.get_param(param)!
     );
+
+    return this.instance;
   }
 
   public get_param(key: Uppercase<string>, throwable = true): string | null {

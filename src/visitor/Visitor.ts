@@ -4,7 +4,6 @@ import chrome from "selenium-webdriver/chrome";
 import {
   Events,
   minutesToMs,
-  timer,
   predictFinishDate,
   Socket,
   Config,
@@ -15,6 +14,7 @@ import Logger from "../utils/Logger";
 import CustomOptions from "./CustomOptions";
 import Parser from "./Parser";
 import { EVENTS } from "../models/Models";
+import { setTimeout } from "node:timers/promises";
 
 /**
  * Visitor that performs such actions:
@@ -152,7 +152,7 @@ export default class Visitor {
         const timer_end = performance.now();
         ms -= timer_end - timer_start;
       } else {
-        await timer(timer_offset_ms);
+        await setTimeout(timer_offset_ms);
         ms -= timer_offset_ms;
       }
     }

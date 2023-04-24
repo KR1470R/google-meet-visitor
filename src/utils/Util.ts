@@ -26,17 +26,6 @@ export function minutesToMs(minutes: number) {
 }
 
 /**
- * Promisified setTimeout.
- * @param ms
- * @returns
- */
-export function timer(ms: number) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-}
-
-/**
  * Maps profile name and path to the user dir.
  * @param full_path full path to user dir
  * @returns USER_DIR_DATA
@@ -218,11 +207,9 @@ export function timeoutWhileCondition(
   });
 }
 
-export const Config = new DotEnvConfig();
+export const Config = DotEnvConfig.init();
 
-export const Events = new EventEmitterExtended();
-
-Config.init();
+export const Events = EventEmitterExtended.init();
 
 export const Socket = new WSServer();
 

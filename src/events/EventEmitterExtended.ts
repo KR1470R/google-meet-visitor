@@ -3,8 +3,14 @@ import Logger from "../utils/Logger";
 import process from "process";
 
 export default class EventEmitterExtended extends EventEmitter {
-  constructor() {
+  private static instance?: EventEmitterExtended;
+
+  private constructor() {
     super();
+  }
+
+  public static init() {
+    return this.instance || (this.instance = new EventEmitterExtended());
   }
 
   public emitCheckable(
