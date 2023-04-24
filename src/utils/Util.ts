@@ -46,9 +46,8 @@ export function parseUserDir(full_path: string): USER_DIR_DATA {
  * @param num
  * @returns
  */
-export function addZero(num: number, condition: (num: number) => boolean) {
-  if (!condition(num)) return num;
-  return parseInt(String(num).padStart(2, "0"));
+export function addZero(num: number) {
+  return String(num).padStart(2, "0");
 }
 
 /**
@@ -56,22 +55,14 @@ export function addZero(num: number, condition: (num: number) => boolean) {
  * @param date Date constructor
  */
 export function splitDate(date = new Date()) {
-  const number_check = (num: number) => num > 9;
-  const day = date.getDate();
-  const month = date.getMonth() + 1;
-  const year = date.getFullYear();
-  const h = date.getHours();
-  const m = date.getMinutes();
-  const s = date.getSeconds();
-  const ms = date.getMilliseconds();
   return {
-    day: addZero(day, number_check),
-    month: addZero(month, number_check),
-    year: addZero(year, number_check),
-    h: addZero(h, number_check),
-    m: addZero(m, number_check),
-    s: addZero(s, number_check),
-    ms: addZero(ms, number_check),
+    day: addZero(date.getDate()),
+    month: addZero(date.getMonth() + 1),
+    year: addZero(date.getFullYear()),
+    h: addZero(date.getHours()),
+    m: addZero(date.getMinutes()),
+    s: addZero(date.getSeconds()),
+    ms: addZero(date.getMilliseconds()),
   };
 }
 

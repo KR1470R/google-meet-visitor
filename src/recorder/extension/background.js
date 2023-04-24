@@ -135,7 +135,7 @@ class BackgroundClient {
         switch (request.type) {
           case "record_register":
             if (this.server_params.target_tab) return;
-            this.registerContentClient(request, sender);
+            await this.registerContentClient(request, sender);
             break;
           case "record_chunk":
             const chunk = await this.downloadChunk(request.data.chunk_url);

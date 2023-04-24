@@ -19,6 +19,7 @@ export default class EventEmitterExtended extends EventEmitter {
     log_header = "EventEmmiter"
   ) {
     if (!this.listenerCount(event)) {
+      Logger.printFatal(log_header, `No listeners found for ${event}!`);
       if (content) Logger.printFatal(log_header, String(content));
       process.exit(1);
     } else this.emit(event, String(content));

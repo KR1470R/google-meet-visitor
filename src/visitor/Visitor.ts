@@ -43,8 +43,6 @@ export default class Visitor {
 
   public async init_driver(webdriver_path: string) {
     try {
-      const server_port = Socket.getAddressKey("port");
-
       this.service = new chrome.ServiceBuilder(webdriver_path);
       this.driver = await new Builder()
         .forBrowser("chrome")
@@ -56,11 +54,7 @@ export default class Visitor {
 
       this.parser = new Parser(this.driver);
 
-      await this.provideLoginIsRequred();
-
-      await this.driver.get(this.target_url);
-
-      await this.isICanJoinCall();
+      const server_port = Socket.getAddressKey("port");
 
       if (server_port) {
         Logger.printInfo(this.log_header, "Sending server port to extension");
@@ -70,6 +64,12 @@ export default class Visitor {
           `
         );
       } else Logger.printWarning(this.log_header, "Server port is null");
+
+      await this.provideLoginIsRequred();
+
+      await this.driver.get(this.target_url);
+
+      await this.isICanJoinCall();
     } catch (err) {
       throw err;
     }
@@ -80,7 +80,7 @@ export default class Visitor {
 
     await this.driver.sleep(2000);
 
-    Events.emitCheckable(EVENTS.visitor_start);
+    // Events.emitCheckable(EVENTS.visitor_start);
 
     await this.driver.manage().window().setRect({
       width: 800,
@@ -113,7 +113,7 @@ export default class Visitor {
     await this.driver.sleep(2000);
     await this.stayAtCallWhile();
     await this.driver.sleep(2000);
-    Events.emitCheckable(EVENTS.visitor_stop);
+    // Events.emitCheckable(EVENTS.visitor_stop);
   }
 
   private async stayAtCallWhile() {
