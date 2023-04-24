@@ -1,15 +1,10 @@
+// Path to user data directory and profile name
 export type USER_DIR_DATA = {
   dir_path: string;
   profile_name: string;
 };
 
-export type RecordOptions = {
-  isActive: boolean;
-  isMuted: boolean;
-  // targetWindowSource: Electron.DesktopCapturerSource;
-  filePath: string;
-};
-
+// State events for the whole app live.
 export const EVENTS = {
   record_ready: "record_ready",
   record_choose_stream: "record_choose_stream",
@@ -36,6 +31,7 @@ export type RecorderData = {
   error?: string;
 };
 
+// DTO for communication between the app and the recorder extension.
 export type RecorderResponse = {
   type: RecorderStates;
   data?: RecorderData;
