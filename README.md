@@ -9,22 +9,29 @@
 
 # Documentation Content
 1. [What it does?][1]
-2. [Requirements][2]
-3. [Usage][3]
+    1) [Demo][1.1]
+3. [Requirements][2]
+4. [Usage][3]
     1) [Installation][3.1]
     2) [Configuration][3.2]
         1) [Explanation of variables][3.2.1]
     3) [Run][3.3]
     4) [Record calls][3.4]
-4. [FAQ][4]
+5. [FAQ][4]
     1) [How to get path for USER_DATA_DIR?][4.1]
     2) [Why does webdriver of visitor use minimized option instead of headless?][4.2]
-5. [Contribution][5]
-6. [License][6]
-7. [TODO][7]
+6. [Contribution][5]
+7. [License][6]
+8. [TODO][7]
 
 # What it does
 The main purpose of the google-meet-visitor is just to visit calls in google meet. The main feature is that you can record calls. It will automate all the user actions, i.e join a call, mute the browser micro and cam, submit that you are in the call, etc.
+
+# Demo
+### Here's example video recorded by google-meet-visitor for 1-minute call. Audio is also supported.
+<div align="center">
+    <img src="./assets/demo.gif" width="500px" height="500px">
+</div>
 
 # Requirements
 Google Chrome **>=** 100\
@@ -79,10 +86,9 @@ Well, on the initial stages of the development that was thought that visitor sho
 
 # TODO
 - make alternative configuration of google-meet-visitor - by using flags in the command line.
-- fix error when starting visitor with already opened chrome.
-- try to automate media source choice.
 
 [1]:https://github.com/KR1470R/google-meet-visitor#what-it-does
+[1.1]:https://github.com/KR1470R/google-meet-visitor#demo
 [2]:https://github.com/KR1470R/google-meet-visitor#requirements
 [3]:https://github.com/KR1470R/google-meet-visitor#usage
 [3.1]:https://github.com/KR1470R/google-meet-visitor#installation
