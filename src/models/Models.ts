@@ -36,3 +36,9 @@ export type RecorderResponse = {
   type: RecorderStates;
   data?: RecorderData;
 };
+
+// DOM element metadata for finding it on web page, use of xpath or tag name
+export type ElementMeta = {
+  xpath?: string;
+  tagname?: string;
+};

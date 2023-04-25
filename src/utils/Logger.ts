@@ -22,7 +22,7 @@ export default class Logger {
   }
 
   public static printError(header: string, content: string) {
-    log.info(`[${header}] -> ${content}`);
+    log.error(`[${header}] -> ${content}`);
   }
 
   public static printFatal(header: string, content: string) {

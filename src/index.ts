@@ -23,28 +23,7 @@ class MainApp {
 
     this.webDriverManager = new WebDriverManager();
     this.visitor = new Visitor(target_link);
-  }
 
-  public async start() {
-    try {
-      await this.webDriverManager.init();
-      await this.webDriverManager.downloadChromeDriver();
-      await Socket.init();
-      await Recorder.init();
-      await this.visitor.init_driver(this.webDriverManager.chromedriver_path);
-      await Recorder.awaitForSocketReady();
-      await Recorder.chooseStream();
-      await this.visitor.start();
-    } catch (err) {
-      Events.emitCheckable(
-        EVENTS.exit,
-        `Failed to start: ${(err as Error).message || err}`,
-        this.log_header
-      );
-    }
-  }
-
-  public listenEvents() {
     Events.on(EVENTS.exit, async (error?: string) => {
       let exitCode = 0;
       if (error) {
@@ -57,8 +36,34 @@ class MainApp {
       process.exit(exitCode);
     });
   }
+
+  public async start() {
+    try {
+      // Init all components.
+      await this.webDriverManager.init();
+      await this.webDriverManager.downloadChromeDriver();
+      await Socket.init();
+      await Recorder.init();
+      await this.visitor.init_driver(this.webDriverManager.chromedriver_path);
+      await Recorder.awaitForSocketReady();
+      await Recorder.chooseStream();
+
+      // Start work.
+      await Recorder.startRecord();
+      await this.visitor.start();
+      await Recorder.stopRecord();
+
+      // Exit after work finished.
+      await this.visitor.shutdown();
+    } catch (err) {
+      Events.emitCheckable(
+        EVENTS.exit,
+        `Failed to start: ${(err as Error).message || err}`,
+        this.log_header
+      );
+    }
+  }
 }
 
 const mainApp = new MainApp();
-mainApp.listenEvents();
 mainApp.start();

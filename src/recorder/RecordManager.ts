@@ -107,18 +107,20 @@ ${current_date.s}.mp4`;
   public startRecord() {
     return new Promise<void>((resolve) => {
       try {
-        if (!this.checkAvailable()) return;
-        if (!this.output_stream) {
-          Events.emitCheckable(
-            EVENTS.exit,
-            "Coudn't start record: output stream is not open!",
-            this.log_header
-          );
-        } else {
-          Socket.send(EVENTS.record_start);
-          Logger.printInfo(this.log_header, "Started recording...");
+        if (!this.checkAvailable()) resolve;
+        else {
+          if (!this.output_stream) {
+            Events.emitCheckable(
+              EVENTS.exit,
+              "Coudn't start record: output stream is not open!",
+              this.log_header
+            );
+          } else {
+            Socket.send(EVENTS.record_start);
+            Logger.printInfo(this.log_header, "Started recording...");
+          }
+          resolve();
         }
-        resolve();
       } catch (err) {
         Events.emitCheckable(EVENTS.exit, String(err), this.log_header);
       }

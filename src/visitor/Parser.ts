@@ -1,6 +1,7 @@
 import { By, until, WebDriver, WebElement } from "selenium-webdriver";
 import { getRandomInt, Events } from "../utils/Util";
-import { EVENTS } from "../models/Models";
+import { EVENTS, ElementMeta } from "../models/Models";
+import Logger from "utils/Logger";
 
 /**
  * Helper for parse elements on page.
@@ -33,17 +34,17 @@ export default class Parser {
 
   /**
    * Returns element by inner text, or undefined if element not found.
-   * @param name
+   * @param tagname
    * @param text
    * @returns
    */
   public async getElementByInnerText(
-    name: string,
+    tagname: string,
     text: string,
     throwable = true
   ): Promise<WebElement | undefined> {
     try {
-      const buttons = await this.driver.findElements(By.css(name));
+      const buttons = await this.driver.findElements(By.css(tagname));
       for (const button of buttons) {
         if ((await button.getText()).toLowerCase() === text.toLowerCase())
           return button;
@@ -52,7 +53,7 @@ export default class Parser {
       if (throwable) {
         Events.emitCheckable(
           EVENTS.exit,
-          `ParserError: Element <${name}> with text "${text}" not found!`,
+          `ParserError: Element <${tagname}> with text "${text}" not found!`,
           this.log_header
         );
       }
@@ -62,27 +63,16 @@ export default class Parser {
       if (throwable) {
         Events.emitCheckable(
           EVENTS.exit,
-          `ParserError: Element <${name}> with text "${text}" not found!`,
+          `ParserError: Element <${tagname}> with text "${text}" not found!`,
           this.log_header
         );
-      }
+      } else
+        Logger.printError(
+          this.log_header,
+          `getElementByInnerText method error: ${err}`
+        );
       return Promise.resolve(undefined);
     }
-  }
-
-  /**
-   * Bind callback on element which calls after element is found.
-   * @param name
-   * @param text
-   * @param callback
-   */
-  public async findElementByInnerTextAndBind(
-    name: string,
-    text: string,
-    callback: (target_el?: WebElement) => Promise<void>
-  ): Promise<void> {
-    const target_el = await this.getElementByInnerText(name, text);
-    await callback(target_el);
   }
 
   /**
@@ -104,22 +94,44 @@ export default class Parser {
    * @param throwable boolean - throw if element was not found after timeout expires
    * @returns
    */
-  public async waitFor(xpath: string, timeout: number, throwable: boolean) {
-    try {
-      const target_el = await this.driver.wait(
-        until.elementLocated(By.xpath(xpath)),
-        timeout
+  public async waitFor(
+    element: ElementMeta,
+    timeout: number,
+    throwable: boolean
+  ) {
+    const locator = {
+      xpath: () => By.xpath(element.xpath!),
+      tagname: () => By.css(element.tagname!),
+    };
+
+    if (!element?.tagname && !element?.xpath) {
+      Events.emitCheckable(
+        EVENTS.exit,
+        `Invalid element metadata: tagname and xpath is undefined!`,
+        this.log_header
       );
-      return target_el;
-    } catch (err) {
-      if (throwable) {
-        Events.emitCheckable(
-          EVENTS.exit,
-          `ParserError: Timeot of waiting for element '${xpath}'!`,
-          this.log_header
+      return Promise.resolve();
+    } else {
+      const element_indicator = element?.tagname ? "tagname" : "xpath";
+      try {
+        const target_el = await this.driver.wait(
+          until.elementLocated(
+            locator[element_indicator as keyof typeof locator]()
+          ),
+          timeout
         );
+        return target_el;
+      } catch (err) {
+        if (throwable) {
+          Events.emitCheckable(
+            EVENTS.exit,
+            `ParserError: Timeot of waiting for element '${element_indicator}'. Reason: ${err}`,
+            this.log_header
+          );
+        } else
+          Logger.printError(this.log_header, `waitFor method error: ${err}`);
+        return Promise.resolve(undefined);
       }
-      return Promise.resolve(undefined);
     }
   }
 
@@ -141,7 +153,11 @@ export default class Parser {
               this.log_header
             );
             await this.driver.sleep(2000);
-          }
+          } else
+            Logger.printError(
+              this.log_header,
+              `waitForElementWithInnerText method error: timeout fetching element ${name} with text ${text}`
+            );
           return Promise.resolve(undefined);
         } else {
           timeout -= 500;
