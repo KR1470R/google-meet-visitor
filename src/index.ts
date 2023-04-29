@@ -1,5 +1,4 @@
 import Visitor from "./visitor/Visitor";
-import { exec } from "child_process";
 import { Events, Recorder, Config, Socket } from "./utils/Util";
 import Logger from "./utils/Logger";
 import WebDriverManager from "./drivers/WebDriverManager";
@@ -15,10 +14,6 @@ class MainApp {
   private log_header = "index";
 
   constructor() {
-    // @TODO Remove this and make exit from session properly
-    // killing all google chrome instances
-    exec("pkill -9 -f google-chrome");
-
     const target_link = Config.get_param("TARGET_CALL_LINK")!;
 
     this.webDriverManager = new WebDriverManager();
