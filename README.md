@@ -1,28 +1,26 @@
 
-
 <div align="center">
-<h1>google-meet-visitor <sup>6.1.8</sup></h1>
+<h1>google-meet-visitor <sup>7.0.0</sup></h1>
 <img  src="./assets/logo.png">
 </div>
-
-<h1 align="center">UNDER DEVELOPMENT</h1>
 
 # Documentation Content
 1. [What it does?][1]
     1) [Demo][1.1]
-3. [Requirements][2]
-4. [Usage][3]
-    1) [Installation][3.1]
-    2) [Configuration][3.2]
-        1) [Explanation of variables][3.2.1]
-    3) [Run][3.3]
-    4) [Record calls][3.4]
-5. [FAQ][4]
-    1) [How to get path for USER_DATA_DIR?][4.1]
-    2) [Why does webdriver of visitor use minimized option instead of headless?][4.2]
-6. [Contribution][5]
-7. [License][6]
-8. [TODO][7]
+2. [Requirements][2]
+3. [Supported Systems][3]
+4. [Usage][4]
+    1) [Installation][4.1]
+    2) [Configuration][4.2]
+        1) [Explanation of variables][4.2.1]
+        2) [Configuration by arguments][4.2.2]
+    3) [Run][4.3]
+    4) [Record calls][4.4]
+5. [FAQ][5]
+    1) [How to get path for USER_DATA_DIR?][5.1]
+    2) [Why does webdriver of visitor use minimized option instead of headless?][5.2]
+6. [Contribution][6]
+7. [License][7]
 
 # What it does
 The main purpose of the google-meet-visitor is just to visit calls in google meet. The main feature is that you can record calls. It will automate all the user actions, i.e join a call, mute the browser micro and cam, submit that you are in the call, etc.
@@ -34,9 +32,18 @@ The main purpose of the google-meet-visitor is just to visit calls in google mee
 </div>
 
 # Requirements
-Google Chrome **>=** 100\
-Node **>=** 18\
-Selenium **>=** 4.1.13
+<div>
+	<img alt="" src="https://badgen.net/badge/Google Chrome/>=100/green">
+	<img alt="" src="https://badgen.net/badge/node.js/>=18/purple">
+	<img alt="" src="https://badgen.net/badge/selenium/>=4.1.13/red">
+</div>
+
+# Supported systems
+<div>
+	<img alt="" src="https://badgen.net/badge/Windows/any/yellow">
+	<img alt="" src="https://badgen.net/badge/Linux/any/pink">
+	<img alt="" src="https://badgen.net/badge/MacOS/any/blue">
+</div>
 
 # Usage
 ## Installation
@@ -44,18 +51,41 @@ Selenium **>=** 4.1.13
     npm ci
 
 ## Configuration
-All the config parameters are stored in the .env file in root of the project. Also, you can specify it by yourself without .env, just define these variables in your global environment. Variables with asterisk* are important, you won't be able to run the program without them.
+All the config parameters are stored in the .env file in root of the project.\
+Variables with asterisk* are important, you won't be able to run the program without them!
 
 ### Explanation of variables:
 ***USER_DATA_DIR**** - specify the path to your google chrome profile directory. [See here][4.1].\
 ***TARGET_CALL_LINK**** - link to your google meet call.\
 ***CALL_TIMER_MINUTES**** - how many minutes the visitor must stay at call\
-***MINIMIZED*** - true or false. If true, the window of the browser will be minimized and if false - maximazed. By default false.\
+***OUTPUT_RECORD_TAB*** - custom path to folder for output records. By default is `dist/records/` in the root.\
+***WIDTH_PX*** - width of browser window. By default 1000.\
+***HEIGHT_PX*** - height of browser window. By default 800.\
+***MINIMIZED*** - true or false. If true, the window of the browser will be minimized and if false - maximized. By default false.\
 ***MUTE*** - true or false. If true, the browser will be totally muted. By default false.\
-***RECORD_TAB*** - true or false. If true, the visitor will record the call. By default false.\
-***OUTPUT_RECORD_TAB*** - custom path of output records. By default is `dist/records/` in the root.
+***RECORD_TAB*** - true or false. If true, the visitor will record the call. By default false.
 
+###  Configuration by arguments
+You also can specify your link to call, user profile path and other config parameters by directly specifying such command-line arguments.\
+⚠️Note that command-line arguments will override parameters you specified in .env file!⚠️
+
+##### List of arguments that overrides .env variables:
+`--user-data-dir=` **or**  `--u=`  overrides ***USER_DATA_DIR***\
+`--target-call-link=` **or**  `--t=` overrides ***TARGET_CALL_LINK***\
+`--call-timer-minutes=`**or** `--timer=` overrides ***CALL_TIMER_MINUTES***\
+`--output-record-tab=` **or** `--o` overrides ***OUTPUT_RECORD_TAB***\
+`--minimized` overrides ***MINIMIZED***\
+`--mute` overrides ***MUTE***\
+`--record-tab` **or** `--r` - overrides ***RECORD_TAB***\
+`--width=` **or** `--w=` overrides ***WIDTH_PX***\
+`--height=` **or** `--h=` overrides ***HEIGHT_PX***
+
+#### Example usage in CLI:
+
+    npm run start -- --u="path/to/user-data-dir/" --t="https://meet.google.com/..." --timer="50" --o="/path/to/output/folder/" --minimized --mute --r 
+⚠️Do not forget specify `--` after `npm run start`.
 ## Run
+
 ‼️Before running visitor, ensure that you have signed in your account.‼️\
 ⚠️It might ask you to login again to ensure that it's you, otherwise visitor will recognize it and give you 5 minutes for login.
 Just go to the root directory of the google-meet-visitor and type the command:
@@ -80,25 +110,24 @@ Well, on the initial stages of the development that was thought that visitor sho
 ### I would be very glad for your contributions. Any questions, issues and suggestions will welcome!
 ### Feel free to create new issues🙃
 # License
-![enter image description here](https://upload.wikimedia.org/wikipedia/commons/f/f8/License_icon-mit-88x31-2.svg)
-
-![enter image description here](https://camo.githubusercontent.com/d5b96d374ea9039f533b8fbb39e8e56964e9281dbf80315b7cef7242a1a21512/68747470733a2f2f6d6972726f72732e6372656174697665636f6d6d6f6e732e6f72672f70726573736b69742f627574746f6e732f38387833312f7376672f62792d6e632e737667)
-
-# TODO
-- make alternative configuration of google-meet-visitor - by using flags in the command line.
+<div>
+	<img src="https://camo.githubusercontent.com/d5b96d374ea9039f533b8fbb39e8e56964e9281dbf80315b7cef7242a1a21512/68747470733a2f2f6d6972726f72732e6372656174697665636f6d6d6f6e732e6f72672f70726573736b69742f627574746f6e732f38387833312f7376672f62792d6e632e737667">
+	<img src="https://upload.wikimedia.org/wikipedia/commons/f/f8/License_icon-mit-88x31-2.svg">
+</div>
 
 [1]:https://github.com/KR1470R/google-meet-visitor#what-it-does
 [1.1]:https://github.com/KR1470R/google-meet-visitor#demo
 [2]:https://github.com/KR1470R/google-meet-visitor#requirements
-[3]:https://github.com/KR1470R/google-meet-visitor#usage
-[3.1]:https://github.com/KR1470R/google-meet-visitor#installation
-[3.2]:https://github.com/KR1470R/google-meet-visitor#configuration
-[3.2.1]:https://github.com/KR1470R/google-meet-visitor#explanation-of-variables
-[3.3]:https://github.com/KR1470R/google-meet-visitor#run
-[3.4]:https://github.com/KR1470R/google-meet-visitor#record-calls
-[4]:https://github.com/KR1470R/google-meet-visitor#faq
-[4.1]:https://github.com/KR1470R/google-meet-visitor#how-to-get-path-for-user_data_dir
-[4.2]:https://github.com/KR1470R/google-meet-visitor#why-does-webdriver-of-visitor-use-minimized-option-instead-of-headless
-[5]:https://github.com/KR1470R/google-meet-visitor#contribution
-[6]:https://github.com/KR1470R/google-meet-visitor#license
-[7]:https://github.com/KR1470R/google-meet-visitor#todo
+[3]:https://github.com/KR1470R/google-meet-visitor#supported-systems
+[4]:https://github.com/KR1470R/google-meet-visitor#usage
+[4.1]:https://github.com/KR1470R/google-meet-visitor#installation
+[4.2]:https://github.com/KR1470R/google-meet-visitor#configuration
+[4.2.1]:https://github.com/KR1470R/google-meet-visitor#explanation-of-variables
+[4.2.2]:https://github.com/KR1470R/google-meet-visitor#configuration-by-arguments
+[4.3]:https://github.com/KR1470R/google-meet-visitor#run
+[4.4]:https://github.com/KR1470R/google-meet-visitor#record-calls
+[5]:https://github.com/KR1470R/google-meet-visitor#faq
+[5.1]:https://github.com/KR1470R/google-meet-visitor#how-to-get-path-for-user_data_dir
+[5.2]:https://github.com/KR1470R/google-meet-visitor#why-does-webdriver-of-visitor-use-minimized-option-instead-of-headless
+[6]:https://github.com/KR1470R/google-meet-visitor#contribution
+[7]:https://github.com/KR1470R/google-meet-visitor#license

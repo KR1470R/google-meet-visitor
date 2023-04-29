@@ -8,6 +8,7 @@ import {
   Socket,
   Config,
   timeoutWhileCondition,
+  isFileExist,
 } from "../utils/Util";
 import Logger from "../utils/Logger";
 import CustomOptions from "./CustomOptions";
@@ -46,6 +47,11 @@ export default class Visitor {
    */
   public async init_driver(webdriver_path: string) {
     try {
+      if (!isFileExist(webdriver_path))
+        throw new Error(
+          `Webdriver executor does not exist on this path: ${webdriver_path}`
+        );
+
       this.service = new chrome.ServiceBuilder(webdriver_path);
       this.driver = await new Builder()
         .forBrowser("chrome")
@@ -54,6 +60,8 @@ export default class Visitor {
         .build();
 
       this.alive = true;
+
+      await this.minimize();
 
       this.parser = new Parser(this.driver);
 
@@ -75,16 +83,9 @@ export default class Visitor {
   public async start() {
     await this.driver.sleep(2000);
 
-    await this.driver.manage().window().setRect({
-      width: 800,
-      height: 1000,
-    });
+    await this.resize();
 
-    if (
-      Config.get_param("MINIMIZED", false) === "true" &&
-      Config.get_param("RECORD_TAB", false) !== "true"
-    )
-      await this.driver.manage().window().minimize();
+    await this.minimize();
 
     await this.start_call();
 
@@ -117,22 +118,37 @@ export default class Visitor {
       return Promise.resolve();
     }
 
-    Logger.printInfo(
-      this.log_header,
-      "Sign in required, waiting for 5 minutes untill the user perform login..."
-    );
-
     await sigin_btn.click();
 
-    await timeoutWhileCondition(
+    const is_signed = await timeoutWhileCondition(
       (async () =>
         (
           await this.driver.getCurrentUrl()
         ).includes("https://meet.google.com/")).bind(this),
-      300000
+      10000,
+      false
     );
 
-    Logger.printInfo(this.log_header, "Logined.");
+    if (is_signed) {
+      Logger.printInfo(this.log_header, "Logined.");
+    } else {
+      Logger.printInfo(
+        this.log_header,
+        "Sign in required, waiting for 5 minutes untill the user perform login..."
+      );
+
+      await this.maximize();
+
+      await timeoutWhileCondition(
+        (async () =>
+          (
+            await this.driver.getCurrentUrl()
+          ).includes("https://meet.google.com/")).bind(this),
+        300000
+      );
+
+      Logger.printInfo(this.log_header, "Logined.");
+    }
   }
 
   /**
@@ -344,6 +360,42 @@ export default class Visitor {
         `
       );
     } else Logger.printWarning(this.log_header, "Server port is null");
+  }
+
+  /**
+   * Minimize visitor window
+   */
+  public async minimize() {
+    if (!this.alive && Config.get_param("MINIMIZED", false) !== "true") return;
+    await this.resize();
+    await this.driver.manage().window().minimize();
+  }
+
+  /**
+   * Maximize visitor window
+   */
+  public async maximize() {
+    if (!this.alive) return;
+    await this.driver.manage().window().maximize();
+  }
+
+  /**
+   * Resize visitor window for neccessary size.
+   */
+  public async resize() {
+    await this.driver
+      .manage()
+      .window()
+      .setRect({
+        width: Math.max(
+          parseInt(Config.get_param("WIDTH_PX", false) || "1000"),
+          1000
+        ),
+        height: Math.max(
+          parseInt(Config.get_param("HEIGHT_PX", false) || "800"),
+          800
+        ),
+      });
   }
 
   /**

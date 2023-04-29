@@ -46,7 +46,9 @@ class MainApp {
       await Recorder.init();
       await this.visitor.init_driver(this.webDriverManager.chromedriver_path);
       await Recorder.awaitForSocketReady();
+      await this.visitor.maximize();
       await Recorder.chooseStream();
+      await this.visitor.minimize();
 
       // Start work.
       await Recorder.startRecord();

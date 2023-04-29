@@ -42,3 +42,77 @@ export type ElementMeta = {
   xpath?: string;
   tagname?: string;
 };
+
+export type ArgumentDescription = Record<
+  string,
+  {
+    flags: string[];
+    type: "flag" | "argument";
+    optional: boolean;
+    template: RegExp;
+  }
+>;
+
+/**
+ * Command-line arguments that could user specify.
+ * All arguments are match with .env params.
+ * Arguments/flags should be unique.
+ */
+export const arguments_matches: ArgumentDescription = {
+  USER_DATA_DIR: {
+    flags: ["--user-data-dir", "--u"],
+    type: "argument",
+    optional: false,
+    template:
+      /^(?:(?:[a-zA-Z]:)|(?:\/))(?:\\|\/)?(?:[\w|\W]+(?:\\|\/)?)*[\w|\W]+$/i,
+  },
+  TARGET_CALL_LINK: {
+    flags: ["--target-call-link", "--t"],
+    type: "argument",
+    optional: false,
+    template: /^https:\/\/meet\.google\.com\/[a-z]{3}-[a-z]{4}-[a-z]{3}$/i,
+  },
+  CALL_TIMER_MINUTES: {
+    flags: ["--call-timer-minutes", "--timer"],
+    type: "argument",
+    optional: false,
+    template: /^[0-9]+$/i,
+  },
+  MINIMIZED: {
+    flags: ["--minimized"],
+    type: "flag",
+    optional: true,
+    template: /true|false/i,
+  },
+  MUTE: {
+    flags: ["--mute"],
+    type: "flag",
+    optional: true,
+    template: /true|false/i,
+  },
+  RECORD_TAB: {
+    flags: ["--record-tab", "--r"],
+    type: "flag",
+    optional: true,
+    template: /true|false/i,
+  },
+  OUTPUT_RECORD_TAB: {
+    flags: ["--output-record-tab", "--o"],
+    type: "argument",
+    optional: true,
+    template:
+      /^(?:(?:[a-zA-Z]:)|(?:\/))(?:\\|\/)?(?:[\w|\W]+(?:\\|\/)?)*[\w|\W]+$/i,
+  },
+  WIDTH_PX: {
+    flags: ["--width", "--w"],
+    type: "argument",
+    optional: true,
+    template: /\d/i,
+  },
+  HEIGHT_PX: {
+    flags: ["--height", "--h"],
+    type: "argument",
+    optional: true,
+    template: /\d/i,
+  },
+};

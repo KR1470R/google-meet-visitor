@@ -2,7 +2,7 @@ import { EVENTS, RecorderData } from "../models/Models";
 import Logger from "../utils/Logger";
 import path from "node:path";
 import {
-  checkAccessToPath,
+  isDirExist,
   Events,
   splitDate,
   Socket,
@@ -17,26 +17,33 @@ import * as fs from "node:fs";
 export default class RecordManager {
   public activated: boolean;
   private ready = false;
-  private path: string;
+  private path?: string;
   private output_stream?: fs.WriteStream;
   private log_header = "Recorder";
 
   constructor() {
     this.activated = Config.get_param("RECORD_TAB", false) === "true";
-    const user_path = Config.get_param("OUTPUT_RECORD_TAB", false);
+    const user_folder = Config.get_param("OUTPUT_RECORD_TAB", false);
+    const default_folder = path.resolve(__dirname, "records");
     const current_date = splitDate();
     const filename = `\
-/records/output_video_\
+output_video_\
 ${current_date.day}_\
 ${current_date.month}_\
 ${current_date.year}_\
 ${current_date.h}_\
 ${current_date.m}_\
 ${current_date.s}.mp4`;
-    this.path =
-      user_path && checkAccessToPath(user_path)
-        ? user_path
-        : path.join(__dirname, filename);
+    const target_folder = user_folder || default_folder;
+    if (isDirExist(target_folder)) {
+      this.path = path.resolve(__dirname, target_folder, filename);
+    } else {
+      Events.emitCheckable(
+        EVENTS.exit,
+        `Output folder for records does not exist - ${target_folder}`,
+        this.log_header
+      );
+    }
   }
 
   /**
@@ -51,7 +58,7 @@ ${current_date.s}.mp4`;
 
     Socket.on(EVENTS.record_ready, () => {
       this.ready = true;
-      this.output_stream = fs.createWriteStream(this.path);
+      this.output_stream = fs.createWriteStream(this.path!);
     });
     Socket.on(EVENTS.record_chunk, (data?: RecorderData | Buffer) => {
       if (!Buffer.isBuffer(data)) return;
@@ -176,29 +183,6 @@ ${current_date.s}.mp4`;
           })
           .catch((err) => reject(err));
       } else resolve();
-    });
-  }
-
-  /**
-   * Awaits for record output save is done.
-   * @returns Promise<void>
-   */
-  public awaitFileSaving() {
-    return new Promise<void>((resolve) => {
-      if (!this.activated) resolve();
-      else {
-        const timeout = setTimeout(() => {
-          Events.emitCheckable(
-            EVENTS.exit,
-            "Timeout of saving video!",
-            this.log_header
-          );
-        }, 20000);
-        Events.once(EVENTS.record_finished, () => {
-          clearTimeout(timeout);
-          resolve();
-        });
-      }
     });
   }
 

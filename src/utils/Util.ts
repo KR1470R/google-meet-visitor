@@ -91,10 +91,24 @@ export function predictFinishDate(remain_ms: number) {
  * @param path
  * @returns
  */
-export function checkAccessToPath(path: string) {
+export function isDirExist(path: string) {
   try {
     const stats = fs.statSync(path);
     return stats.isDirectory();
+  } catch (error) {
+    return false;
+  }
+}
+
+/**
+ * Check does file exist
+ * @param path
+ * @returns
+ */
+export function isFileExist(path: string) {
+  try {
+    const stats = fs.statSync(path);
+    return stats.isFile();
   } catch (error) {
     return false;
   }
@@ -178,30 +192,33 @@ export function translateResponse(message: Buffer): RecorderResponse | Buffer {
  */
 export function timeoutWhileCondition(
   condition: () => boolean | Promise<boolean>,
-  ms: number
+  ms: number,
+  throwable = true
 ) {
-  return new Promise<void>((resolve, reject) => {
+  return new Promise<boolean>((resolve, reject) => {
     let counter = 0;
     const delay = 1000;
     const interval = setInterval(async () => {
       counter += delay;
       if (await condition()) {
-        resolve();
+        resolve(true);
         clearInterval(interval);
       } else {
         if (counter > ms) {
-          reject("timeout");
-          clearInterval(interval);
+          if (throwable) {
+            reject("timeout");
+            clearInterval(interval);
+          } else resolve(false);
         }
       }
     }, delay);
   });
 }
 
-export const Config = DotEnvConfig.init();
-
+/**
+ * Singletons of the main components.
+ */
 export const Events = EventEmitterExtended.init();
-
+export const Config = DotEnvConfig.init();
 export const Socket = new WSServer();
-
 export const Recorder = new RecordManager();
