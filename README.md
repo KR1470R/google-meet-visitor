@@ -82,7 +82,7 @@ You also can specify your link to call, user profile path and other config param
 
 #### Example usage in CLI:
 
-    npm run start -- --u="path/to/user-data-dir/" --t="https://meet.google.com/..." --timer="50" --o="/path/to/output/folder/" --minimized --mute --r 
+    npm run start -- --u="path/to/user-data-dir/" --t="https://meet.google.com/..." --timer="50" --o="/path/to/output/folder/" --minimized --mute --r --w=1000 --h=800
 ⚠️Do not forget specify `--` after `npm run start`.
 ## Run
 
