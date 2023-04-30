@@ -15,11 +15,11 @@ import * as fs from "node:fs";
  * Record Manager that provide controll Media Stream from Chrome extension and its output saving.
  */
 export default class RecordManager {
-  public activated: boolean;
+  private activated: boolean;
   private ready = false;
   private path?: string;
   private output_stream?: fs.WriteStream;
-  private log_header = "Recorder";
+  private readonly log_header = "Recorder";
 
   constructor() {
     this.activated = Config.get_param("RECORD_TAB", false) === "true";

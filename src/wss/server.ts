@@ -8,13 +8,13 @@ import findFreePort from "../lib/findFreePort";
  * Server that handle Chrome Extension requests.
  */
 export default class WSServer {
-  public server!: WebSocketServer;
+  private server!: WebSocketServer;
   private config!: Record<string, string | number>;
   private connected?: WebSocket;
   private listeners: Record<string, (data?: RecorderData | Buffer) => void> =
     {};
   private shouldClose = false;
-  private log_header = "Socket";
+  private readonly log_header = "Socket";
 
   constructor() {}
 

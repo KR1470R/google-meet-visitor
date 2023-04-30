@@ -7,7 +7,7 @@ import Logger from "utils/Logger";
  * Helper for parse elements on page.
  */
 export default class Parser {
-  private log_header = "Parser";
+  private readonly log_header = "Parser";
 
   constructor(private driver: WebDriver) {}
 

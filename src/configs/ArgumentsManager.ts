@@ -1,6 +1,10 @@
 import { arguments_matches } from "../models/Models";
 import { DotenvParseOutput } from "dotenv";
 
+/**
+ * Parses CLI arguments specified by user and converts it to dotenv object.\
+ * Ex. `npm run start -- --<arg_name>=<arg_value>`
+ */
 export class ArgumentsManager {
   public static parseToDotEnv(): DotenvParseOutput {
     try {

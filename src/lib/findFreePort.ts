@@ -5,6 +5,7 @@ const port_constraints = {
 };
 
 /**
+ * Bruteforcing for free port in the local network.
  * @param ip Host ip (default localhost)
  * @param minPort Min available port (default 1024)
  * @param maxPort Max available port (default 65535)

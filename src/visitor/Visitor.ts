@@ -25,7 +25,7 @@ import { setTimeout } from "node:timers/promises";
  *  - stay at call for a time specified by user.
  */
 export default class Visitor {
-  public target_url: string;
+  private target_url: string;
   private driver!: WebDriver;
   private service!: chrome.ServiceBuilder;
   private options!: CustomOptions;
@@ -34,7 +34,7 @@ export default class Visitor {
   private pending_shutdown = false;
   private alive = false;
 
-  private log_header = "Visitor";
+  private readonly log_header = "Visitor";
 
   constructor(target_url: string) {
     this.target_url = target_url;

@@ -8,7 +8,7 @@ import * as path from "node:path";
  * Defines parameters for browser specified by user.
  */
 export default class CustomOptions extends Options {
-  private log_header = "ChromeOptions";
+  private readonly log_header = "ChromeOptions";
 
   constructor() {
     super();

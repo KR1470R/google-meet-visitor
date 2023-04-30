@@ -11,7 +11,7 @@ import { EVENTS } from "models/Models";
 class MainApp {
   private webDriverManager: WebDriverManager;
   private visitor: Visitor;
-  private log_header = "index";
+  private readonly log_header = "index";
 
   constructor() {
     const target_link = Config.get_param("TARGET_CALL_LINK")!;
@@ -36,7 +36,7 @@ class MainApp {
     try {
       // Init all components.
       await this.webDriverManager.init();
-      await this.webDriverManager.downloadChromeDriver();
+      await this.webDriverManager.provideChromeDriver();
       await Socket.init();
       await Recorder.init();
       await this.visitor.init_driver(this.webDriverManager.chromedriver_path);

@@ -3,6 +3,9 @@ import crypto from "node:crypto";
 import * as path from "node:path";
 import * as fs from "node:fs";
 
+/**
+ * Build Google Chrome Extension of Visitor Recorder.
+ */
 try {
   const private_key_path = path.resolve(__dirname, "recorder", "key.pem");
 

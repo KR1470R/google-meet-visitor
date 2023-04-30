@@ -5,18 +5,27 @@ import getChromeVersion from "find-chrome-version";
 import StreamZip from "node-stream-zip";
 import { getDriverPlatformName, modeNum, binary_windize } from "../utils/Util";
 
+/**
+ * Manager for webdriver. Performs:
+ *  0. Gets version of user's google chrome.
+ *  1. Fetches zip of webdriver of fetched version.
+ *  2. Extracts zip.
+ *  3. Renames webdriver binary to a name so it will indicate
+ *     preinstalled driver for the next run of the program.
+ *  4. Removes extra files.
+ */
 export default class WebDriverManager {
-  private log_header = "WebDriverManager";
-  public chromedriver_name = getDriverPlatformName() as string;
+  private readonly log_header = "WebDriverManager";
+  private chromedriver_name = getDriverPlatformName() as string;
   public chromedriver_path!: string;
-  public file_name!: string;
+  private file_name!: string;
 
   constructor() {
     if (!this.chromedriver_name) this.throwError("Uncompatible platform!");
   }
 
   public async init() {
-    const version = (await this.getChromeVersion()).replace(/\./g, "-");
+    const version = (await this.getUserChromeVersion()).replace(/\./g, "-");
     this.file_name = this.chromedriver_name + "_" + version;
     this.chromedriver_path = binary_windize(
       path.resolve("src", "drivers", this.file_name!)
@@ -28,7 +37,7 @@ export default class WebDriverManager {
     return fs.existsSync(this.chromedriver_path);
   }
 
-  public async downloadChromeDriver() {
+  public async provideChromeDriver() {
     if (this.isWebDriverInstalled()) {
       Logger.printInfo(
         this.log_header,
@@ -37,7 +46,7 @@ export default class WebDriverManager {
       return;
     }
     const url = "https://chromedriver.storage.googleapis.com/";
-    const target_version = await this.getLatestChromeVersion();
+    const target_version = await this.getLatestChromeVersionFromAPI();
     const zip_url = `${url}${target_version}/${this.chromedriver_name}.zip`;
     Logger.printInfo(
       this.log_header,
@@ -105,17 +114,17 @@ export default class WebDriverManager {
     });
   }
 
-  private async getChromeVersion() {
+  private async getUserChromeVersion() {
     const full_version = await getChromeVersion();
     const parsed = full_version.match(/(\d+\.\d+\.\d+)/gm);
     if (!parsed) throw new Error(`Failed to parse the version: ${parsed}`);
     return parsed![0];
   }
 
-  private async getLatestChromeVersion() {
+  private async getLatestChromeVersionFromAPI() {
     try {
       const url = "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_";
-      const base_version = await this.getChromeVersion();
+      const base_version = await this.getUserChromeVersion();
       const full_version = await (await fetch(`${url}${base_version}`)).text();
       return full_version;
     } catch (err) {

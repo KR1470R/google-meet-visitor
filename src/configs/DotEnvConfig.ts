@@ -9,7 +9,7 @@ import Logger from "../utils/Logger";
  * Manager of .env config.
  */
 export default class DotEnvConfig {
-  private static log_header = "DotEnvConfig";
+  private static readonly log_header = "DotEnvConfig";
   private static instance?: DotEnvConfig;
 
   private constructor() {}
