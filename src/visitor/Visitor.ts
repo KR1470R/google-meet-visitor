@@ -13,7 +13,7 @@ import {
 import Logger from "../utils/Logger";
 import CustomOptions from "./CustomOptions";
 import Parser from "./Parser";
-import { EVENTS } from "../models/Models";
+import { EVENTS, IVisitor } from "../models/Models";
 import { setTimeout } from "node:timers/promises";
 
 /**
@@ -24,7 +24,7 @@ import { setTimeout } from "node:timers/promises";
  *  - visit call;
  *  - stay at call for a time specified by user.
  */
-export default class Visitor {
+export default class Visitor implements IVisitor {
   private target_url: string;
   private driver!: WebDriver;
   private service!: chrome.ServiceBuilder;
@@ -42,9 +42,6 @@ export default class Visitor {
     this.options = new CustomOptions();
   }
 
-  /**
-   * Init driver and configure all neccessary components.
-   */
   public async init_driver(webdriver_path: string) {
     try {
       if (!isFileExist(webdriver_path))
@@ -77,9 +74,6 @@ export default class Visitor {
     }
   }
 
-  /**
-   * Start work.
-   */
   public async start() {
     await this.driver.sleep(2000);
 
@@ -91,6 +85,8 @@ export default class Visitor {
 
     this.driver.sleep(1000);
 
+    await this.leaveCall();
+
     Logger.printInfo(this.log_header, "Finished task successfully!");
     this.driver.sleep(2000);
   }
@@ -98,7 +94,7 @@ export default class Visitor {
   /**
    * Recognize is login require, if so, avait till user perform login (timeout 5min).
    */
-  public async provideLoginIsRequred() {
+  private async provideLoginIsRequred() {
     Logger.printInfo(
       this.log_header,
       "Checking is google account login is required..."
@@ -333,17 +329,13 @@ export default class Visitor {
   /**
    * Simple leveaving call.
    */
-  public async leaveCall() {
+  private async leaveCall() {
     Logger.printInfo(this.log_header, "Leaving call...");
     const leave_button = await this.parser.getElementByTagName(
       "button[aria-label='Leave call'][role=button]"
     );
     await this.driver.sleep(2000);
     await leave_button?.click();
-  }
-
-  public getTabTitle() {
-    return this.driver.getTitle();
   }
 
   /**
@@ -362,26 +354,17 @@ export default class Visitor {
     } else Logger.printWarning(this.log_header, "Server port is null");
   }
 
-  /**
-   * Minimize visitor window
-   */
   public async minimize() {
     if (!this.alive && Config.get_param("MINIMIZED", false) !== "true") return;
     await this.resize();
     await this.driver.manage().window().minimize();
   }
 
-  /**
-   * Maximize visitor window
-   */
   public async maximize() {
     if (!this.alive) return;
     await this.driver.manage().window().maximize();
   }
 
-  /**
-   * Resize visitor window for neccessary size.
-   */
   public async resize() {
     await this.driver
       .manage()
@@ -398,9 +381,6 @@ export default class Visitor {
       });
   }
 
-  /**
-   * Stop visitor work.
-   */
   public async shutdown() {
     if (!this.alive || this.pending_shutdown) return;
 

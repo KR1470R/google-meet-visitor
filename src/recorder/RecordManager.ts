@@ -1,4 +1,4 @@
-import { EVENTS, RecorderData } from "../models/Models";
+import { EVENTS, RecorderData, IRecordManager } from "../models/Models";
 import Logger from "../utils/Logger";
 import path from "node:path";
 import {
@@ -14,7 +14,7 @@ import * as fs from "node:fs";
 /**
  * Record Manager that provide controll Media Stream from Chrome extension and its output saving.
  */
-export default class RecordManager {
+export default class RecordManager implements IRecordManager {
   private activated: boolean;
   private ready = false;
   private path?: string;
@@ -46,10 +46,6 @@ ${current_date.s}.mp4`;
     }
   }
 
-  /**
-   * Init all required options, events and socket.
-   * @returns Promise<void>
-   */
   public init() {
     if (!this.activated) {
       Logger.printInfo(this.log_header, "Disabled.");
@@ -84,11 +80,6 @@ ${current_date.s}.mp4`;
     });
   }
 
-  /**
-   * Awaits untill socket respond ready signal.
-   * If socket didn't returned ready signal for 30s, reject performs as well.
-   * @returns Promise<void>
-   */
   public async awaitForSocketReady() {
     try {
       Logger.printInfo(
@@ -107,10 +98,26 @@ ${current_date.s}.mp4`;
     }
   }
 
-  /**
-   * Sends start record signal into MediaStream on Chrome Extension.
-   * @returns void
-   */
+  public chooseStream() {
+    return new Promise<void>((resolve, reject) => {
+      if (this.checkAvailable()) {
+        Logger.printInfo(
+          this.log_header,
+          "Choose stream for browser. (waiting for 1 minute...)"
+        );
+        let choosed = false;
+        Socket.send(EVENTS.record_choose_stream);
+        Socket.on(EVENTS.record_stream_choosed, () => (choosed = true));
+        timeoutWhileCondition(() => choosed, 60000)
+          .then(() => {
+            Logger.printInfo(this.log_header, "Stream choosed");
+            resolve();
+          })
+          .catch((err) => reject(err));
+      } else resolve();
+    });
+  }
+
   public startRecord() {
     return new Promise<void>((resolve) => {
       try {
@@ -134,10 +141,6 @@ ${current_date.s}.mp4`;
     });
   }
 
-  /**
-   * Sends stop record signal into MediaStream on Chrome Extension.
-   * @returns void
-   */
   public stopRecord() {
     return new Promise<void>((resolve, reject) => {
       if (!this.checkAvailable()) resolve();
@@ -158,31 +161,6 @@ ${current_date.s}.mp4`;
           });
         }
       }
-    });
-  }
-
-  /**
-   * Sends signal to Chrome Extension, that opends popup to choose tab record to.
-   * If user does not choose a tab for 1 minute, timeout throws as well.
-   * @returns Promise<void>
-   */
-  public chooseStream() {
-    return new Promise<void>((resolve, reject) => {
-      if (this.checkAvailable()) {
-        Logger.printInfo(
-          this.log_header,
-          "Choose stream for browser. (waiting for 1 minute...)"
-        );
-        let choosed = false;
-        Socket.send(EVENTS.record_choose_stream);
-        Socket.on(EVENTS.record_stream_choosed, () => (choosed = true));
-        timeoutWhileCondition(() => choosed, 60000)
-          .then(() => {
-            Logger.printInfo(this.log_header, "Stream choosed");
-            resolve();
-          })
-          .catch((err) => reject(err));
-      } else resolve();
     });
   }
 

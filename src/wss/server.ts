@@ -1,13 +1,13 @@
 import { WebSocketServer, AddressInfo, WebSocket } from "ws";
 import Logger from "../utils/Logger";
 import { Config, Events, translateResponse } from "../utils/Util";
-import { EVENTS, RecorderData } from "../models/Models";
+import { EVENTS, RecorderData, IWSSErver } from "../models/Models";
 import findFreePort from "../lib/findFreePort";
 
 /**
  * Server that handle Chrome Extension requests.
  */
-export default class WSServer {
+export default class WSServer implements IWSSErver {
   private server!: WebSocketServer;
   private config!: Record<string, string | number>;
   private connected?: WebSocket;
@@ -133,7 +133,7 @@ export default class WSServer {
     return this.connected ? true : false;
   }
 
-  public getAddressKey(key: string): string | number | null {
+  public getAddressKey(key: "address" | "port"): string | number | null {
     const params = this.server?.address() as AddressInfo;
     const target_key = params?.[key as keyof typeof params];
     if (target_key) return target_key;

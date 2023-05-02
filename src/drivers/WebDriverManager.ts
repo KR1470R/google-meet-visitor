@@ -4,6 +4,7 @@ import Logger from "../utils/Logger";
 import getChromeVersion from "find-chrome-version";
 import StreamZip from "node-stream-zip";
 import { getDriverPlatformName, modeNum, binary_windize } from "../utils/Util";
+import { IWebDriverManager } from "../models/Models";
 
 /**
  * Manager for webdriver. Performs:
@@ -14,11 +15,11 @@ import { getDriverPlatformName, modeNum, binary_windize } from "../utils/Util";
  *     preinstalled driver for the next run of the program.
  *  4. Removes extra files.
  */
-export default class WebDriverManager {
+export default class WebDriverManager implements IWebDriverManager {
   private readonly log_header = "WebDriverManager";
   private chromedriver_name = getDriverPlatformName() as string;
-  public chromedriver_path!: string;
   private file_name!: string;
+  public chromedriver_path!: string;
 
   constructor() {
     if (!this.chromedriver_name) this.throwError("Uncompatible platform!");
