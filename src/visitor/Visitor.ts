@@ -355,7 +355,7 @@ export default class Visitor implements IVisitor {
   }
 
   public async minimize() {
-    if (!this.alive && Config.get_param("MINIMIZED", false) !== "true") return;
+    if (!this.alive || Config.get_param("MINIMIZED", false) !== "true") return;
     await this.resize();
     await this.driver.manage().window().minimize();
   }
