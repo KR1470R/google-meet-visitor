@@ -55,9 +55,9 @@ All the config parameters are stored in the .env file in root of the project.\
 Variables with asterisk* are important, you won't be able to run the program without them!
 
 ### Explanation of variables:
-***USER_DATA_DIR*** - specify the path to your google chrome profile directory. [See here][4.1].\
-***TARGET_CALL_LINK*** - link to your google meet call.\
-***CALL_TIMER_MINUTES*** - how many minutes the visitor must stay at call\
+***USER_DATA_DIR**** - specify the path to your google chrome profile directory. [See here][5.1].\
+***TARGET_CALL_LINK**** - link to your google meet call.\
+***CALL_TIMER_MINUTES**** - how many minutes the visitor must stay at call\
 ***OUTPUT_RECORD_TAB*** - custom path to folder for output records. By default is `dist/records/` in the root.\
 ***WIDTH_PX*** - width of browser window. By default 1000.\
 ***HEIGHT_PX*** - height of browser window. By default 800.\
