@@ -9,7 +9,7 @@ const common = {
   name: "common",
   mode: "production",
   entry: {
-    app: path.resolve(__dirname, "src","index.ts"),
+    app: path.resolve(__dirname, "src", "index.ts"),
     build_crx: path.resolve(__dirname, "src", "lib", "build_crx.ts"),
   },
   target: "node",
@@ -32,7 +32,11 @@ const common = {
   },
   resolve: {
     extensions: [".ts", ".js"],
-    plugins: [new TsconfigPathsPlugin({ configFile: path.resolve(__dirname, "tsconfig.json") })],
+    plugins: [
+      new TsconfigPathsPlugin({
+        configFile: path.resolve(__dirname, "tsconfig.json"),
+      }),
+    ],
   },
   optimization: {
     minimize: true,
@@ -52,6 +56,14 @@ const common = {
         {
           from: path.resolve(__dirname, "src", "recorder", "extension"),
           to: path.resolve(__dirname, "dist", "recorder", "extension"),
+        },
+      ],
+    }),
+    new CopyPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, "src", "lib", "vendor"),
+          to: path.resolve(__dirname, "dist", "vendor"),
         },
       ],
     }),

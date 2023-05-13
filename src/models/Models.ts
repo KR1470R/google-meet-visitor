@@ -63,6 +63,26 @@ export interface IVisitor {
    * @returns Promise<void>
    */
   shutdown: () => Promise<void>;
+
+  /**
+   * Totally freeze Visitor. Stop perform any action till unfreeze will be invoked.
+   * Be carefully while using that to avoid unexpected behaviour!
+   * @returns void
+   */
+  freeze: () => void;
+
+  /**
+   * Continue visitor's work.
+   * @returns void
+   */
+  unfreeze: () => void;
+
+  /**
+   * Stop perform any action for the given time.
+   * @param ms milliseconds for sleep
+   * @returns
+   */
+  sleep: (ms: number) => Promise<void>;
 }
 
 export interface IWSSErver {
@@ -213,7 +233,7 @@ export const arguments_matches: ArgumentDescription = {
     flags: ["--target-call-link", "--t"],
     type: "argument",
     optional: false,
-    template: /^https:\/\/meet\.google\.com\/[a-z]{3}-[a-z]{4}-[a-z]{3}$/i,
+    template: /^https|http:\/\/meet\.google\.com\/[a-z]{3}-[a-z]{4}-[a-z]{3}$/i,
   },
   CALL_TIMER_MINUTES: {
     flags: ["--call-timer-minutes", "--timer"],
@@ -258,4 +278,41 @@ export const arguments_matches: ArgumentDescription = {
     optional: true,
     template: /\d/i,
   },
+  ASK_JOIN_WAIT_MIN: {
+    flags: ["--ask-to-join-wait", "--ask-min"],
+    type: "argument",
+    optional: true,
+    template: /\d/i,
+  },
+  IGNORE_ERRORS: {
+    flags: ["--ignore-errors", "--i"],
+    type: "flag",
+    optional: true,
+    template: /true|false/i,
+  },
+};
+
+export type SignalCallbackType =
+  | { (error?: string): Promise<void> }
+  | { (): void };
+
+export type ParserButtonWithInnerText = {
+  name: string;
+  text: string;
+};
+
+export type BrowserProcessNix = {
+  pid: number;
+  name: string;
+  cmd: string;
+  ppid: number;
+  uid: number;
+  cpu: number;
+  memory: number;
+};
+
+export type BrowserProcessWindows = {
+  ppid: number;
+  pid: number;
+  name: string;
 };

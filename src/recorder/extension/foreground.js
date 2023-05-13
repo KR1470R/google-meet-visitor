@@ -53,6 +53,10 @@ class ContentClient {
 
   startRecord() {
     this.mediaRecorder.start();
+    window.recorder = this.mediaRecorder;
+    // setInterval(() => {
+    //   this.mediaRecorder.requestData();
+    // }, 500);
   }
 
   stopRecord() {

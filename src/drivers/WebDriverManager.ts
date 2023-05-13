@@ -29,7 +29,7 @@ export default class WebDriverManager implements IWebDriverManager {
     const version = (await this.getUserChromeVersion()).replace(/\./g, "-");
     this.file_name = this.chromedriver_name + "_" + version;
     this.chromedriver_path = binary_windize(
-      path.resolve("src", "drivers", this.file_name!)
+      path.resolve(__dirname, "drivers", this.file_name!)
     );
   }
 
@@ -42,8 +42,9 @@ export default class WebDriverManager implements IWebDriverManager {
     if (this.isWebDriverInstalled()) {
       Logger.printInfo(
         this.log_header,
-        "Required chromedriver is exist. skipping"
+        `Using chromedriver at path: ${this.chromedriver_path}`
       );
+
       return;
     }
     const url = "https://chromedriver.storage.googleapis.com/";
@@ -63,7 +64,7 @@ export default class WebDriverManager implements IWebDriverManager {
     Logger.printInfo(this.log_header, "Downloading...");
     const zip_buffer = Buffer.from(await response.arrayBuffer());
     const zip_path = path.resolve(
-      "src",
+      __dirname,
       "drivers",
       `chromedriver_${target_version!.replace(/\./g, "_")}.zip`
     );
@@ -98,7 +99,7 @@ export default class WebDriverManager implements IWebDriverManager {
           zip_stream.close();
           fs.rmSync(zip_path);
           fs.rename(
-            path.resolve("src", "drivers", binary_windize("chromedriver")),
+            path.resolve(__dirname, "drivers", binary_windize("chromedriver")),
             this.chromedriver_path,
             on_rename
           );
@@ -106,7 +107,11 @@ export default class WebDriverManager implements IWebDriverManager {
       };
       zip_stream.on("ready", () => {
         Logger.printInfo(this.log_header, "Extracting zip...");
-        zip_stream.extract(null, path.resolve("src", "drivers"), on_extract);
+        zip_stream.extract(
+          null,
+          path.resolve(__dirname, "drivers"),
+          on_extract
+        );
       });
       zip_stream.on("error", (error: Error) => {
         zip_stream.close();
@@ -134,7 +139,7 @@ export default class WebDriverManager implements IWebDriverManager {
   }
 
   private throwError(error: string) {
-    Logger.printError(this.log_header, error);
+    Logger.printFatal(this.log_header, error);
     process.exit(1);
   }
 }

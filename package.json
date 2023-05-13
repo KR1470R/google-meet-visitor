@@ -1,6 +1,6 @@
 {
   "name": "google-meet-visitor",
-  "version": "7.0.0",
+  "version": "7.0.1",
   "description": "Passive agent of Google Meet that visits and records calls without interaction with user.",
   "main": "index.js",
   "type": "commonjs",
@@ -29,6 +29,10 @@
   },
   "homepage": "https://github.com/KR1470R/google-meet-visitor#readme",
   "devDependencies": {
+    "@types/events": "^3.0.0",
+    "@types/pino": "^7.0.5",
+    "@types/selenium-webdriver": "^4.1.14",
+    "@types/ws": "^8.5.4",
     "@typescript-eslint/eslint-plugin": "^5.55.0",
     "@typescript-eslint/parser": "^5.55.0",
     "copy-webpack-plugin": "^11.0.0",
@@ -46,10 +50,6 @@
     "webpack-node-externals": "^3.0.0"
   },
   "dependencies": {
-    "@types/events": "^3.0.0",
-    "@types/pino": "^7.0.5",
-    "@types/selenium-webdriver": "^4.1.13",
-    "@types/ws": "^8.5.4",
     "crx": "^5.0.1",
     "dotenv": "^16.0.3",
     "event": "^1.0.0",

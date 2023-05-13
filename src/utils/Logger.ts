@@ -1,4 +1,6 @@
 import pino from "pino";
+import { Config } from "./Util";
+
 const log = pino({
   transport: {
     target: "pino-pretty",
@@ -22,6 +24,12 @@ export default class Logger {
   }
 
   public static printError(header: string, content: string) {
+    if (
+      typeof Config === "undefined"
+        ? false
+        : Config.get_param("IGNORE_ERRORS", false) === "true"
+    )
+      return;
     log.error(`[${header}] -> ${content}`);
   }
 

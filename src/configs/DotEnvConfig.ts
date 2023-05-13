@@ -38,7 +38,8 @@ export default class DotEnvConfig {
 
       return this.instance;
     } catch (err) {
-      Logger.printError(DotEnvConfig.log_header, String(err));
+      if (!Logger) console.log(DotEnvConfig.log_header, String(err));
+      else Logger.printFatal(DotEnvConfig.log_header, String(err));
       process.exit(1);
     }
   }

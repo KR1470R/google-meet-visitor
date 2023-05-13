@@ -52,7 +52,7 @@ export default class WSServer implements IWSSErver {
             });
           });
           this.server.on("listening", () => {
-            const address = this.getAddressKey("address");
+            const address = "localhost"; //this.getAddressKey("address");
             const port = this.getAddressKey("port");
             Logger.printInfo(
               this.log_header,
@@ -83,6 +83,7 @@ export default class WSServer implements IWSSErver {
         );
         return;
       }
+
       target_listener(translated);
     } else {
       const target_listener: (data?: RecorderData) => void | undefined =

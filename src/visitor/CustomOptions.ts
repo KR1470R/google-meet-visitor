@@ -66,5 +66,7 @@ export default class CustomOptions extends Options {
     } else {
       Logger.printInfo(this.log_header, "Audio is unmuted.");
     }
+
+    this.detachDriver(true);
   }
 }

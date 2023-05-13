@@ -15,11 +15,12 @@ import * as fs from "node:fs";
  * Record Manager that provide controll Media Stream from Chrome extension and its output saving.
  */
 export default class RecordManager implements IRecordManager {
+  private readonly log_header = "Recorder";
+  private output_stream?: fs.WriteStream;
+  private path?: string;
   private activated: boolean;
   private ready = false;
-  private path?: string;
-  private output_stream?: fs.WriteStream;
-  private readonly log_header = "Recorder";
+  private is_stream_choosed = false;
 
   constructor() {
     this.activated = Config.get_param("RECORD_TAB", false) === "true";
@@ -63,6 +64,7 @@ ${current_date.s}.mp4`;
     });
     Socket.on(EVENTS.record_error, async (data?: RecorderData | Buffer) => {
       if (Buffer.isBuffer(data)) return;
+
       await Socket.closeConnection();
       if (!data?.error) {
         Events.emitCheckable(
@@ -77,6 +79,15 @@ ${current_date.s}.mp4`;
         `Recorder error: ${data!.error}`,
         this.log_header
       );
+    });
+    Socket.on(EVENTS.record_finished, async () => {
+      Logger.printInfo(
+        this.log_header,
+        `Your video record saved successfully in ${this.path}`
+      );
+      this.output_stream?.close();
+      this.ready = false;
+      await Socket.closeConnection();
     });
   }
 
@@ -105,10 +116,12 @@ ${current_date.s}.mp4`;
           this.log_header,
           "Choose stream for browser. (waiting for 1 minute...)"
         );
-        let choosed = false;
         Socket.send(EVENTS.record_choose_stream);
-        Socket.on(EVENTS.record_stream_choosed, () => (choosed = true));
-        timeoutWhileCondition(() => choosed, 60000)
+        Socket.on(
+          EVENTS.record_stream_choosed,
+          () => (this.is_stream_choosed = true)
+        );
+        timeoutWhileCondition(() => this.is_stream_choosed, 60000)
           .then(() => {
             Logger.printInfo(this.log_header, "Stream choosed");
             resolve();
@@ -148,17 +161,14 @@ ${current_date.s}.mp4`;
         if (!this.output_stream) {
           reject(new Error("Coudn't stop record: output stream is not open!"));
         } else {
-          Socket.send(EVENTS.record_stop);
-          Socket.on(EVENTS.record_finished, async () => {
-            Logger.printInfo(
-              this.log_header,
-              `Your video record saved successfully in ${this.path}`
-            );
-            this.output_stream?.close();
-            this.activated = false;
-            await Socket.closeConnection();
+          if (!this.is_stream_choosed) {
             resolve();
-          });
+          } else {
+            Socket.send(EVENTS.record_stop);
+            timeoutWhileCondition(() => !this.ready, 10000).then(() => {
+              resolve();
+            }, reject);
+          }
         }
       }
     });

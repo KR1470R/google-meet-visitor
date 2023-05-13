@@ -1,6 +1,6 @@
 
 <div align="center">
-<h1>google-meet-visitor <sup>7.0.0</sup></h1>
+<h1>google-meet-visitor <sup>7.0.1</sup></h1>
 <img  src="./assets/logo.png">
 </div>
 
@@ -55,15 +55,17 @@ All the config parameters are stored in the .env file in root of the project.\
 Variables with asterisk* are important, you won't be able to run the program without them!
 
 ### Explanation of variables:
-***USER_DATA_DIR**** - specify the path to your google chrome profile directory. [See here][4.1].\
-***TARGET_CALL_LINK**** - link to your google meet call.\
-***CALL_TIMER_MINUTES**** - how many minutes the visitor must stay at call\
+***USER_DATA_DIR*** - specify the path to your google chrome profile directory. [See here][4.1].\
+***TARGET_CALL_LINK*** - link to your google meet call.\
+***CALL_TIMER_MINUTES*** - how many minutes the visitor must stay at call\
 ***OUTPUT_RECORD_TAB*** - custom path to folder for output records. By default is `dist/records/` in the root.\
 ***WIDTH_PX*** - width of browser window. By default 1000.\
 ***HEIGHT_PX*** - height of browser window. By default 800.\
 ***MINIMIZED*** - true or false. If true, the window of the browser will be minimized and if false - maximized. By default false.\
 ***MUTE*** - true or false. If true, the browser will be totally muted. By default false.\
-***RECORD_TAB*** - true or false. If true, the visitor will record the call. By default false.
+***RECORD_TAB*** - true or false. If true, the visitor will record the call. By default false.\
+***ASK_JOIN_WAIT_MIN*** - how many minutes await for host of call accept your "ask to join" request(default 10).\
+***IGNORE_ERRORS*** - skip printing errors(aka "some element not found", etc) - true/false(default false, recomended for debuging).
 
 ###  Configuration by arguments
 You also can specify your link to call, user profile path and other config parameters by directly specifying such command-line arguments.\
@@ -78,21 +80,24 @@ You also can specify your link to call, user profile path and other config param
 `--mute` overrides ***MUTE***\
 `--record-tab` **or** `--r` - overrides ***RECORD_TAB***\
 `--width=` **or** `--w=` overrides ***WIDTH_PX***\
-`--height=` **or** `--h=` overrides ***HEIGHT_PX***
+`--height=` **or** `--h=` overrides ***HEIGHT_PX***\
+`--ask-to-join-wait=` **or** `--ask-min=` overrides ***ASK_JOIN_WAIT_MIN***\
+`--ignore-errors` **or** `--i` overrides ***IGNORE_ERRORS***
 
 #### Example usage in CLI:
 
-    npm run start -- --u="path/to/user-data-dir/" --t="https://meet.google.com/..." --timer="50" --o="/path/to/output/folder/" --minimized --mute --r --w=1000 --h=800
+    npm run start -- --u="path/to/user-data-dir/" --t="https://meet.google.com/..." --timer="50" --o="/path/to/output/folder/" --minimized --mute --r --w=1000 --h=800 --ask-min=123 --i
 ⚠️Do not forget specify `--` after `npm run start`.
 ## Run
 
-‼️Before running visitor, ensure that you have signed in your account.‼️\
+‼️Before running the visitor, ensure that you have signed in your account.‼️\
 ⚠️It might ask you to login again to ensure that it's you, otherwise visitor will recognize it and give you 5 minutes for login.
 Just go to the root directory of the google-meet-visitor and type the command:
 
     npm run make # build the program, run after every changes you made in the project.
     npm run start # run the visitor, you have not build the project every time if you have already build it.
 
+✅To stop the program before he finishes work, click `Ctrl+C` - the visitor will save a video(if recording) and stop immediately!
 # FAQ
 ## How to get path for ***USER_DATA_DIR***?
 

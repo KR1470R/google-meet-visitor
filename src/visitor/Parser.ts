@@ -1,7 +1,12 @@
 import { By, until, WebDriver, WebElement } from "selenium-webdriver";
 import { getRandomInt, Events } from "../utils/Util";
-import { EVENTS, ElementMeta } from "../models/Models";
+import {
+  EVENTS,
+  ElementMeta,
+  ParserButtonWithInnerText,
+} from "../models/Models";
 import Logger from "utils/Logger";
+import { setTimeout } from "node:timers/promises";
 
 /**
  * Helper for parse elements on page.
@@ -135,6 +140,14 @@ export default class Parser {
     }
   }
 
+  /**
+   * Wait for element with given inner text and tagname
+   * @param name tag name of desired element
+   * @param text inner text of the element
+   * @param timeout given time for element seeking
+   * @param throwable should it throw an error if element not found for the given time
+   * @returns Promise<WebElement | undefined>
+   */
   public waitForElementWithInnerText(
     name: string,
     text: string,
@@ -166,5 +179,65 @@ export default class Parser {
       }
     };
     return fetch_elem();
+  }
+
+  /**
+   * Wait for any first appeared element among given ones.
+   * @param elements list of approximated elements
+   * @param timeout given time for elements seeking
+   * @param throwable should it throw an error if any element not found for the given time
+   * @returns Promise<WebElement | undefined>
+   */
+  public async waitForOneOfElementsWithInnerText(
+    elements: ParserButtonWithInnerText[],
+    timeout: number,
+    throwable = true
+  ) {
+    const fetch_elem = async (
+      elem: ParserButtonWithInnerText
+    ): Promise<WebElement | undefined> => {
+      const target_elem = await this.getElementByInnerText(
+        elem.name,
+        elem.text,
+        false
+      );
+      if (target_elem) return Promise.resolve(target_elem);
+      else {
+        if (timeout <= 0) {
+          if (throwable) {
+            await this.driver.sleep(2000);
+          } else
+            Logger.printError(
+              this.log_header,
+              `waitForElementWithInnerText method error: timeout fetching element <${elem.name}>${elem.text}</${elem.name}>`
+            );
+          return Promise.resolve(undefined);
+        } else {
+          timeout -= 500;
+          return fetch_elem(elem);
+        }
+      }
+    };
+
+    const promises = elements.map(async (el: ParserButtonWithInnerText) => {
+      const found = await fetch_elem(el);
+      return found;
+    });
+
+    const founded = await Promise.race(promises);
+
+    if (founded) return founded;
+
+    if (throwable) {
+      Events.emitCheckable(
+        EVENTS.exit,
+        `ParserError: Couldn't find any of these elements: ${elements.map(
+          (el) => `<${el.name}>${el.text}</${el.name}>`
+        )}`,
+        this.log_header
+      );
+      await setTimeout(2000);
+    }
+    return undefined;
   }
 }
