@@ -1,6 +1,6 @@
 
 <div align="center">
-<h1>google-meet-visitor <sup>7.0.2</sup></h1>
+<h1>𝐆𝐎𝐎𝐆𝐋𝐄-𝐌𝐄𝐄𝐓-𝐕𝐈𝐒𝐈𝐓𝐎𝐑<sup>7.0.2</sup></h1>
 <img  src="./assets/logo.png">
 </div>
 
