@@ -70,7 +70,7 @@ Variables with asterisk* are important, you won't be able to run the program wit
 ***GMEET_CAM_MUTE*** - mute gmeet webcam, by default false.
 
 
-###  Configuration by arguments
+###  Configuration by CLI arguments
 You also can specify your link to call, user profile path and other config parameters by directly specifying such command-line arguments.\
 ⚠️Note that command-line arguments will override parameters you specified in .env file!⚠️
 
@@ -122,7 +122,7 @@ To fix that problem, you need to close all Chrome instances and run the program 
 Well, on the initial stages of the development that was thought that visitor should run with headless option, at least for non-recording mode. But, i faced with a lot of problem by doing it, i couldn't even join to call with headless mode, i have tried a lot of options, nevertheless google meet just have blocked it. So the only solution i came up with is just use minimized mode.
 
 # TODO
-- [ ] Fix corruption in leaving when user leaves by Ctrl-C.
+- [ ] Fix interruption in leaving when user leaves by Ctrl-C.
 
 # Contribution
 ### I would be very glad for your contributions. Any questions, issues and suggestions will welcome!
