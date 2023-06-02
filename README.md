@@ -65,8 +65,8 @@ Variables with asterisk* are important, you won't be able to run the program wit
 ***MUTE*** - true or false. If true, the browser will be totally muted. By default false.\
 ***RECORD_TAB*** - true or false. If true, the visitor will record the call. By default false.\
 ***ASK_JOIN_WAIT_MIN*** - how many minutes await for host of call accept your "ask to join" request(default 10).\
-***IGNORE_ERRORS*** - skip printing errors(aka "some element not found", etc) - true/false(default false, recomended for debuging).
-***GMEET_MIC_MUTE*** - mute gmeet micro, by default false.
+***IGNORE_ERRORS*** - skip printing errors(aka "some element not found", etc) - true/false(default false, recomended for debuging).\
+***GMEET_MIC_MUTE*** - mute gmeet micro, by default false.\
 ***GMEET_CAM_MUTE*** - mute gmeet webcam, by default false.
 
 
@@ -85,8 +85,8 @@ You also can specify your link to call, user profile path and other config param
 `--width=` **or** `--w=` overrides ***WIDTH_PX***\
 `--height=` **or** `--h=` overrides ***HEIGHT_PX***\
 `--ask-to-join-wait=` **or** `--ask-min=` overrides ***ASK_JOIN_WAIT_MIN***\
-`--ignore-errors` **or** `--i` overrides ***IGNORE_ERRORS***
-`--gmeet-mic-mute` **or** `--gmm` overrides ***GMEET_MIC_MUTE***
+`--ignore-errors` **or** `--i` overrides ***IGNORE_ERRORS***\
+`--gmeet-mic-mute` **or** `--gmm` overrides ***GMEET_MIC_MUTE***\
 `--gmeet-cam-mute` **or** `--gcm` overrides ***GMEET_CAM_MUTE***
 
 #### Example usage in CLI:
