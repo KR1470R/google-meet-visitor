@@ -207,7 +207,7 @@ export type ElementMeta = {
 };
 
 export type ArgumentDescription = Record<
-  string,
+  Uppercase<string>,
   {
     flags: string[];
     type: "flag" | "argument";
@@ -290,11 +290,21 @@ export const arguments_matches: ArgumentDescription = {
     optional: true,
     template: /true|false/i,
   },
+  GMEET_MIC_MUTE: {
+    flags: ["--gmeet-mic-mute", "--gmm"],
+    type: "flag",
+    optional: true,
+    template: /true|false/i,
+  },
+  GMEET_CAM_MUTE: {
+    flags: ["--gmeet-cam-mute", "--gcm"],
+    type: "flag",
+    optional: true,
+    template: /true|false/i,
+  },
 };
 
-export type SignalCallbackType =
-  | { (error?: string): Promise<void> }
-  | { (): void };
+export type SignalCallbackType = { (error?: string): Promise<void> };
 
 export type ParserButtonWithInnerText = {
   name: string;

@@ -162,6 +162,8 @@ export default class Visitor implements IVisitor {
       300000
     );
 
+    await this.driver.get(this.target_url);
+
     Logger.printInfo(this.log_header, "Logined.");
   }
 
@@ -199,23 +201,30 @@ export default class Visitor implements IVisitor {
 
     Logger.printInfo(this.log_header, "Disabling media devices at call...");
 
-    Logger.printInfo(this.log_header, "Disabling camera...");
-    await this.driver
-      .actions()
-      .keyDown(Key.CONTROL)
-      .sendKeys("e")
-      .keyUp(Key.CONTROL)
-      .perform();
+    const isCamMuted = Config.get_param("GMEET_CAM_MUTE", false) === "true";
+    const isMicroMuted = Config.get_param("GMEET_MIC_MUTE", false) === "true";
 
-    await this.sleep(1000);
+    if (isCamMuted) {
+      Logger.printInfo(this.log_header, "Disabling camera...");
+      await this.driver
+        .actions()
+        .keyDown(Key.CONTROL)
+        .sendKeys("e")
+        .keyUp(Key.CONTROL)
+        .perform();
+      await this.sleep(1000);
+    }
 
-    Logger.printInfo(this.log_header, "Disabling microphone...");
-    await this.driver
-      .actions()
-      .keyDown(Key.CONTROL)
-      .sendKeys("d")
-      .keyUp(Key.CONTROL)
-      .perform();
+    if (isMicroMuted) {
+      Logger.printInfo(this.log_header, "Disabling microphone...");
+
+      await this.driver
+        .actions()
+        .keyDown(Key.CONTROL)
+        .sendKeys("d")
+        .keyUp(Key.CONTROL)
+        .perform();
+    }
   }
 
   /**
@@ -363,7 +372,7 @@ export default class Visitor implements IVisitor {
   }
 
   /**
-   * Simple leveaving call.
+   * Simple leaving call.
    */
   public async leaveCall() {
     Logger.printInfo(this.log_header, "Leaving call...");
@@ -376,6 +385,7 @@ export default class Visitor implements IVisitor {
     const leave_button = await this.parser.getElementByTagName(
       "button[aria-label='Leave call'][role=button]"
     );
+
     await setTimeout(1000);
     await leave_button?.click();
   }
@@ -445,7 +455,6 @@ export default class Visitor implements IVisitor {
   public freeze() {
     Logger.printWarning(this.log_header, "Freezed!");
     this.is_freezed = true;
-    this.checkFreeze();
   }
 
   public unfreeze() {
@@ -478,7 +487,8 @@ export default class Visitor implements IVisitor {
   }
 
   /**
-   * Returns browser Process meta with pid, ppid, name respectively.
+   * Find out browser process where visitor is running.
+   * @returns pid, ppid, name
    */
   private async getBrowserInstanceProcess() {
     const processes = await pslist();

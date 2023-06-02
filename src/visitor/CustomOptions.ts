@@ -15,7 +15,7 @@ export default class CustomOptions extends Options {
     //@ts-ignore
     this.addArguments([
       "--disable-blink-features=AutomationControlled",
-      "--use-fake-ui-for-media-stream",
+      // "--use-fake-ui-for-media-stream",
       "--hide-crash-restore-bubble",
       "--disable-notifications",
       "--maximized",

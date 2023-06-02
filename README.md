@@ -1,6 +1,6 @@
 
 <div align="center">
-<h1>google-meet-visitor <sup>7.0.1</sup></h1>
+<h1>google-meet-visitor <sup>7.0.2</sup></h1>
 <img  src="./assets/logo.png">
 </div>
 
@@ -66,6 +66,9 @@ Variables with asterisk* are important, you won't be able to run the program wit
 ***RECORD_TAB*** - true or false. If true, the visitor will record the call. By default false.\
 ***ASK_JOIN_WAIT_MIN*** - how many minutes await for host of call accept your "ask to join" request(default 10).\
 ***IGNORE_ERRORS*** - skip printing errors(aka "some element not found", etc) - true/false(default false, recomended for debuging).
+***GMEET_MIC_MUTE*** - mute gmeet micro, by default false.
+***GMEET_CAM_MUTE*** - mute gmeet webcam, by default false.
+
 
 ###  Configuration by arguments
 You also can specify your link to call, user profile path and other config parameters by directly specifying such command-line arguments.\
@@ -83,6 +86,8 @@ You also can specify your link to call, user profile path and other config param
 `--height=` **or** `--h=` overrides ***HEIGHT_PX***\
 `--ask-to-join-wait=` **or** `--ask-min=` overrides ***ASK_JOIN_WAIT_MIN***\
 `--ignore-errors` **or** `--i` overrides ***IGNORE_ERRORS***
+`--gmeet-mic-mute` **or** `--gmm` overrides ***GMEET_MIC_MUTE***
+`--gmeet-cam-mute` **or** `--gcm` overrides ***GMEET_CAM_MUTE***
 
 #### Example usage in CLI:
 
@@ -107,6 +112,11 @@ The main purpose of using user data directory is to automate authorization of us
 3. Copy the path in a **Profile Path** row and paste to your ***USER_DATA_DIR*** variable.
 
 <img align="center"  src="./assets/profile_path.png">
+
+## Failed to start: unknown error: Chrome failed to start: exited normally.
+This occurs because chromedriver requires 0 opened Chrome instances.
+To fix that problem, you need to close all Chrome instances and run the program again.
+
 
 ## Why does webdriver of visitor use minimized option instead of headless?
 Well, on the initial stages of the development that was thought that visitor should run with headless option, at least for non-recording mode. But, i faced with a lot of problem by doing it, i couldn't even join to call with headless mode, i have tried a lot of options, nevertheless google meet just have blocked it. So the only solution i came up with is just use minimized mode.

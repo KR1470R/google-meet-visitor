@@ -93,11 +93,11 @@ ${current_date.s}.mp4`;
 
   public async awaitForSocketReady() {
     try {
-      Logger.printInfo(
-        this.log_header,
-        "Awaiting for 1 minute while client connect."
-      );
       if (this.activated) {
+        Logger.printInfo(
+          this.log_header,
+          "Awaiting for 1 minute while client connect."
+        );
         await timeoutWhileCondition(() => this.ready, 60000);
         Logger.printInfo(this.log_header, "Ready to start.");
       }
@@ -134,7 +134,7 @@ ${current_date.s}.mp4`;
   public startRecord() {
     return new Promise<void>((resolve) => {
       try {
-        if (!this.checkAvailable()) resolve;
+        if (!this.checkAvailable()) resolve();
         else {
           if (!this.output_stream) {
             Events.emitCheckable(
