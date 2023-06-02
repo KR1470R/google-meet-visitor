@@ -122,7 +122,7 @@ To fix that problem, you need to close all Chrome instances and run the program 
 Well, on the initial stages of the development that was thought that visitor should run with headless option, at least for non-recording mode. But, i faced with a lot of problem by doing it, i couldn't even join to call with headless mode, i have tried a lot of options, nevertheless google meet just have blocked it. So the only solution i came up with is just use minimized mode.
 
 # TODO
-- [ ] Fix interruption in leaving when user leaves by Ctrl-C.
+- [ ] To fix the interruption when leaving a call by Ctrl-C.
 
 # Contribution
 ### I would be very glad for your contributions. Any questions, issues and suggestions will welcome!
