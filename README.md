@@ -19,11 +19,14 @@
 5. [FAQ][5]
     1) [How to get path for USER_DATA_DIR?][5.1]
     2) [Why does webdriver of visitor use minimized option instead of headless?][5.2]
+    3) [How to fix "Failed to start: unknown error: Chrome failed to start: exited normally."?][5.3]
 6. [Contribution][6]
 7. [License][7]
 
 # What it does
-The main purpose of the google-meet-visitor is just to visit calls in google meet. The main feature is that you can record calls. It will automate all the user actions, i.e join a call, mute the browser micro and cam, submit that you are in the call, etc.
+The main purpose of the google-meet-visitor is just to visit calls in google meet.\
+The main feature is that you can record calls.\
+It will automate all the user actions, i.e join a call, mute the browser micro and cam, submit that you are in the call, etc.
 
 # Demo
 ### Here's example video recorded by google-meet-visitor for 1-minute call. Audio is also supported.
@@ -106,20 +109,25 @@ Just go to the root directory of the google-meet-visitor and type the command:
 # FAQ
 ## How to get path for ***USER_DATA_DIR***?
 
-The main purpose of using user data directory is to automate authorization of user in google meet. Don't worry, it doesn't steal your data.
-1. Open your google chrome.
-2. Open this link `chrome://version/`
-3. Copy the path in a **Profile Path** row and paste to your ***USER_DATA_DIR*** variable.
+The main purpose of using user data directory is to automate authorization of user in google meet.\
+Don't worry, it doesn't steal your data.
+1. Open your google chrome with your already authorized google account.
+2. Type `chrome://version/` in your address bar and click enter.
+3. Copy the path from **Profile Path** row.
+4. Now you can use this path either for ***USER_DATA_DIR*** variable in your config or in `--user-data-dir=` in CLI arguments.
 
 <img align="center"  src="./assets/profile_path.png">
 
-## Failed to start: unknown error: Chrome failed to start: exited normally.
-This occurs because chromedriver requires 0 opened Chrome instances.
-To fix that problem, you need to close all Chrome instances and run the program again.
-
-
 ## Why does webdriver of visitor use minimized option instead of headless?
-Well, on the initial stages of the development that was thought that visitor should run with headless option, at least for non-recording mode. But, i faced with a lot of problem by doing it, i couldn't even join to call with headless mode, i have tried a lot of options, nevertheless google meet just have blocked it. So the only solution i came up with is just use minimized mode.
+Well, on the initial stages of the development that was thought that visitor should run with headless option,\
+at least for non-recording mode.\
+But, i faced with a lot of problem by doing it, i couldn't even join to call with headless mode,\
+i have tried a lot of options, nevertheless google meet just have blocked it.\
+So the only solution i came up with is just use minimized mode.
+
+## How to fix "Failed to start unknown error: Chrome failed to start: exited normally"?
+This occurs because chromedriver requires 0 opened Chrome instances.\
+To fix that problem, you should close all Chrome instances and run the program again.
 
 # TODO
 - [ ] To fix the interruption when leaving a call by Ctrl-C.
@@ -147,5 +155,6 @@ Well, on the initial stages of the development that was thought that visitor sho
 [5]:https://github.com/KR1470R/google-meet-visitor#faq
 [5.1]:https://github.com/KR1470R/google-meet-visitor#how-to-get-path-for-user_data_dir
 [5.2]:https://github.com/KR1470R/google-meet-visitor#why-does-webdriver-of-visitor-use-minimized-option-instead-of-headless
+[5.3]:https://github.com/KR1470R/google-meet-visitor#how-to-fix-failed-to-start-unknown-error-chrome-failed-to-start-exited-normally
 [6]:https://github.com/KR1470R/google-meet-visitor#contribution
 [7]:https://github.com/KR1470R/google-meet-visitor#license
