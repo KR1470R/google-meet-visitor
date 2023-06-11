@@ -2,7 +2,7 @@ import { SignalCallbackType } from "../models/Models";
 import Logger from "./Logger";
 
 /**
- * Process signal handler
+ * Process signal observer
  * Executes callbacks before program will be terminated because of unhandled error or user interruption.
  */
 export default class SignalManager {
@@ -39,7 +39,7 @@ export default class SignalManager {
           "Interrupted by user! Performing last operations..."
         );
 
-        Promise.allSettled(this.callbacks.map((call) => call())).then(() => {
+        this.settleCallbacks().then(() => {
           process.exit(status_code);
         });
       });
@@ -58,7 +58,7 @@ export default class SignalManager {
           `Interrupted by unhandled exception! Performing last operations...\nERROR:${err.name}: ${err.stack}`
         );
 
-        Promise.allSettled(this.callbacks).then(() => {
+        this.settleCallbacks().then(() => {
           status_code = 1;
           process.exit(status_code);
         });
@@ -66,5 +66,9 @@ export default class SignalManager {
     }
 
     if (exit) process.exit(status_code);
+  }
+
+  private settleCallbacks() {
+    return Promise.allSettled(this.callbacks.map((call) => call()));
   }
 }
