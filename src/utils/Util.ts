@@ -6,6 +6,13 @@ import path from "node:path";
 import RecordManager from "../recorder/RecordManager";
 import DotEnvConfig from "../configs/DotEnvConfig";
 
+const available_platforms = {
+  linux: "linux64",
+  darwin: "mac-arm64",
+  win32: "win32",
+  win64: "win64",
+};
+
 /**
  * Returns random int with given range.
  * @param min
@@ -119,18 +126,19 @@ export function isFileExist(path: string) {
  * @returns string that contains user platform name, or null if couldn't define.
  */
 export function getDriverPlatformName(): string | null {
-  const prefix = "chromedriver_";
-  const available_platforms = {
-    linux: "linux64",
-    darwin: "mac_arm64",
-    win32: "win32",
-  };
+  const prefix = "chromedriver-";
   const target_platform =
     available_platforms?.[process.platform as keyof typeof available_platforms];
 
   if (target_platform) return `${prefix}${target_platform}`;
 
   return null;
+}
+
+export function getPlatformRaw(): string | null {
+  const target_platform =
+    available_platforms?.[process.platform as keyof typeof available_platforms];
+  return target_platform;
 }
 
 /**
