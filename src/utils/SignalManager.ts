@@ -1,5 +1,5 @@
 import { SignalCallbackType } from "../models/Models";
-import Logger from "./Logger";
+import { Logger } from "./Util";
 
 /**
  * Process signal observer

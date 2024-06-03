@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import { Events } from "../utils/Util";
 import { EVENTS, arguments_matches } from "../models/Models";
 import { ArgumentsManager } from "./ArgumentsManager";
-import Logger from "../utils/Logger";
+import { Logger } from "../utils/Util";
 
 /**
  * Manager of .env config.

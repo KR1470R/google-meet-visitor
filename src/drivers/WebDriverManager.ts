@@ -1,6 +1,6 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import Logger from "../utils/Logger";
+import { Logger } from "../utils/Util";
 import getChromeVersion from "find-chrome-version";
 import StreamZip from "node-stream-zip";
 import {

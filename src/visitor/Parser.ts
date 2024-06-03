@@ -5,7 +5,7 @@ import {
   ElementMeta,
   ParserButtonWithInnerText,
 } from "../models/Models";
-import Logger from "utils/Logger";
+import { Logger } from "utils/Util";
 import { setTimeout } from "node:timers/promises";
 
 /**

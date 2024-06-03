@@ -12,18 +12,18 @@ const log = pino({
 });
 
 /**
- * Util that outputs messages in prettyfied view in different cases.
+ * Util to output messages in prettyfied view in different cases.
  */
-export default class Logger {
-  public static printInfo(header: string, content: string) {
+export default class LoggerUtil {
+  public printInfo(header: string, content: string) {
     log.info(`[${header}] -> ${content}`);
   }
 
-  public static printWarning(header: string, content: string) {
+  public printWarning(header: string, content: string) {
     log.warn(`[${header}] -> ${content}`);
   }
 
-  public static printError(header: string, content: string) {
+  public printError(header: string, content: string) {
     if (
       typeof Config === "undefined"
         ? false
@@ -33,7 +33,7 @@ export default class Logger {
     log.error(`[${header}] -> ${content}`);
   }
 
-  public static printFatal(header: string, content: string) {
+  public printFatal(header: string, content: string) {
     log.fatal(`[${header}] -> ${content}`);
   }
 }

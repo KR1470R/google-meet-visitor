@@ -3,7 +3,7 @@ import { Builder, WebDriver, Key, until } from "selenium-webdriver";
 import chrome from "selenium-webdriver/chrome";
 import CustomOptions from "./CustomOptions";
 import Parser from "./Parser";
-import Logger from "../utils/Logger";
+import { Logger } from "../utils/Util";
 import { setTimeout } from "node:timers/promises";
 import pslist from "../lib/ps-list";
 import {
@@ -302,10 +302,11 @@ export default class Visitor implements IVisitor {
 
     Logger.printInfo(this.log_header, "Joining call...");
 
-    const button_join = await this.parser.waitFor(
-      {
-        xpath: "//*[contains(text(), 'Join now')]/parent::button",
-      },
+    const button_join = await this.parser.waitForOneOfElementsWithInnerText(
+      [
+        { name: "button", text: "Join now" },
+        { name: "button", text: "Switch here" },
+      ],
       5000,
       false
     );

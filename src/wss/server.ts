@@ -1,5 +1,5 @@
 import { WebSocketServer, AddressInfo, WebSocket } from "ws";
-import Logger from "../utils/Logger";
+import { Logger } from "../utils/Util";
 import { Config, Events, translateResponse } from "../utils/Util";
 import { EVENTS, RecorderData, IWSSErver } from "../models/Models";
 import findFreePort from "../lib/findFreePort";

@@ -5,6 +5,7 @@ import fs from "node:fs";
 import path from "node:path";
 import RecordManager from "../recorder/RecordManager";
 import DotEnvConfig from "../configs/DotEnvConfig";
+import LoggerUtil from "./Logger";
 
 const available_platforms = {
   linux: "linux64",
@@ -226,6 +227,7 @@ export function timeoutWhileCondition(
 /**
  * Singletons of the main components.
  */
+export const Logger = new LoggerUtil();
 export const Events = EventEmitterExtended.init();
 export const Config = DotEnvConfig.init();
 export const Socket = new WSServer();

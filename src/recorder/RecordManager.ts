@@ -1,5 +1,5 @@
 import { EVENTS, RecorderData, IRecordManager } from "../models/Models";
-import Logger from "../utils/Logger";
+import { Logger } from "../utils/Util";
 import path from "node:path";
 import {
   isDirExist,

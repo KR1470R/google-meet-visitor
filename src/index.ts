@@ -1,6 +1,6 @@
 import Visitor from "./visitor/Visitor";
 import { Events, Recorder, Config, Socket } from "./utils/Util";
-import Logger from "./utils/Logger";
+import { Logger } from "./utils/Util";
 import WebDriverManager from "./drivers/WebDriverManager";
 import { EVENTS } from "models/Models";
 import SignalManager from "utils/SignalManager";

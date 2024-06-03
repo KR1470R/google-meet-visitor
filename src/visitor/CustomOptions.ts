@@ -1,5 +1,5 @@
 import { Options } from "selenium-webdriver/chrome";
-import Logger from "../utils/Logger";
+import { Logger } from "../utils/Util";
 import { Config, isDirExist, parseUserDir } from "../utils/Util";
 import * as path from "node:path";
 
