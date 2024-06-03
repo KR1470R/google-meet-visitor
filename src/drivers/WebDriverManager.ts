@@ -128,7 +128,6 @@ export default class WebDriverManager implements IWebDriverManager {
         else {
           zip_stream.close();
           fs.rmSync(zip_path);
-          console.log("NEEEW", this.isNewer);
           fs.rename(
             path.resolve(
               __dirname,
