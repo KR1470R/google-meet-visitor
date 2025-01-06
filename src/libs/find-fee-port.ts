@@ -1,5 +1,6 @@
 import net from "node:net";
-const port_constraints = {
+
+const portConstraints = {
   min: 1024,
   max: 65535,
 };
@@ -12,15 +13,15 @@ const port_constraints = {
  * @param amount Amount of available ports to get(default 1)
  * @returns Promise<number>
  */
-export default function findFreePort(
+export default function findFeePort(
   ip: string,
-  minPort: number = port_constraints.min,
-  maxPort: number = port_constraints.max,
+  minPort: number = portConstraints.min,
+  maxPort: number = portConstraints.max,
   amount = 1
 ) {
   return new Promise<number[] | number>((resolve, reject) => {
     [minPort, maxPort].forEach((p) => {
-      if (p < port_constraints.min || p > port_constraints.max)
+      if (p < portConstraints.min || p > portConstraints.max)
         throw new Error("OverPortError");
     });
 

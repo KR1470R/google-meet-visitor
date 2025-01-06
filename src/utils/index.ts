@@ -1,13 +1,14 @@
-import EventEmitterExtended from "../events/EventEmitterExtended";
-import WSServer from "../wss/server";
-import { USER_DIR_DATA, RecorderResponse } from "../models/Models";
+import EventEmitterExtended from "../events/event-emitter-extended";
+import WSServer from "../wss/ws-server";
+import { RecorderResponse, USER_DIR_DATA } from "../types";
 import fs from "node:fs";
 import path from "node:path";
-import RecordManager from "../recorder/RecordManager";
-import DotEnvConfig from "../configs/DotEnvConfig";
-import LoggerUtil from "./Logger";
+import RecordManager from "../recorder/record-manager";
+import DotEnvConfig from "../configs/dot-env-config";
+import LoggerUtil from "./logger-util";
+import StreamZip from "node-stream-zip";
 
-const available_platforms = {
+const availablePlatforms = {
   linux: "linux64",
   darwin: "mac-arm64",
   win32: "win32",
@@ -128,8 +129,7 @@ export function isFileExist(path: string) {
  */
 export function getDriverPlatformName(): string | null {
   const prefix = "chromedriver-";
-  const target_platform =
-    available_platforms?.[process.platform as keyof typeof available_platforms];
+  const target_platform = getPlatformRaw();
 
   if (target_platform) return `${prefix}${target_platform}`;
 
@@ -138,7 +138,8 @@ export function getDriverPlatformName(): string | null {
 
 export function getPlatformRaw(): string | null {
   const target_platform =
-    available_platforms?.[process.platform as keyof typeof available_platforms];
+    availablePlatforms?.[process.platform as keyof typeof availablePlatforms];
+
   return target_platform;
 }
 
@@ -167,8 +168,9 @@ export function modeNum(
  * @param filename
  * @returns
  */
-export function binary_windize(filename: string) {
+export function addExeExtention(filename: string) {
   if (process.platform === "win32") return `${filename}.exe`;
+
   return filename;
 }
 
@@ -221,6 +223,43 @@ export function timeoutWhileCondition(
         }
       }
     }, delay);
+  });
+}
+
+export function throwError(logHeader: string, error: string) {
+  Logger.printFatal(logHeader, error);
+  process.exit(1);
+}
+
+export function extractZip(params: {
+  zipPath: string;
+  removeSourceZip: boolean;
+  logHeader?: string;
+}) {
+  const zipPath = params.zipPath;
+  const removeSourceZip = params.removeSourceZip;
+  const logHeader = params?.logHeader ?? "ZipExtractor";
+
+  const zipStream = new StreamZip({ file: zipPath, storeEntries: true });
+
+  return new Promise<void>((resolve) => {
+    const onExtract = (error: Error | null) => {
+      if (error) throwError(logHeader, `Error in extraction zip: ${error}`);
+      else {
+        zipStream.close();
+        if (removeSourceZip) fs.rmSync(zipPath);
+        Logger.printInfo(logHeader, "Extracted successfully!");
+        resolve();
+      }
+    };
+    zipStream.on("ready", () => {
+      Logger.printInfo(logHeader, "Extracting zip...");
+      zipStream.extract(null, path.resolve(__dirname, "drivers"), onExtract);
+    });
+    zipStream.on("error", (error: Error) => {
+      zipStream.close();
+      throwError(logHeader, String(error));
+    });
   });
 }
 

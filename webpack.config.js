@@ -10,7 +10,7 @@ const common = {
   mode: "production",
   entry: {
     app: path.resolve(__dirname, "src", "index.ts"),
-    build_crx: path.resolve(__dirname, "src", "lib", "build_crx.ts"),
+    build_crx: path.resolve(__dirname, "src", "libs", "build-crx.ts"),
   },
   target: "node",
   output: {
@@ -62,7 +62,7 @@ const common = {
     new CopyPlugin({
       patterns: [
         {
-          from: path.resolve(__dirname, "src", "lib", "vendor"),
+          from: path.resolve(__dirname, "src", "libs", "vendor"),
           to: path.resolve(__dirname, "dist", "vendor"),
         },
       ],

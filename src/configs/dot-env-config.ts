@@ -1,15 +1,14 @@
 import process from "process";
 import dotenv from "dotenv";
-import { Events } from "../utils/Util";
-import { EVENTS, arguments_matches } from "../models/Models";
-import { ArgumentsManager } from "./ArgumentsManager";
-import { Logger } from "../utils/Util";
+import { Events, Logger } from "../utils";
+import { argumentsMatches, EVENTS } from "../constants";
+import { ArgumentsManager } from "./arguments-manager";
 
 /**
  * Manager of .env config.
  */
 export default class DotEnvConfig {
-  private static readonly log_header = "DotEnvConfig";
+  private static readonly logHeader = "DotEnvConfig";
   private static instance?: DotEnvConfig;
 
   private constructor() {}
@@ -23,14 +22,14 @@ export default class DotEnvConfig {
 
       this.instance = this.instance || new DotEnvConfig();
 
-      for (const [arg, val] of Object.entries(arguments_matches)) {
-        const check_param = this.instance.get_param(
+      for (const [arg, val] of Object.entries(argumentsMatches)) {
+        const check_param = this.instance.get(
           arg as Uppercase<string>,
           !val.optional
         );
         if (check_param && !val.template.test(check_param)) {
           Logger.printFatal(
-            DotEnvConfig.log_header,
+            DotEnvConfig.logHeader,
             `Incorrect config value for ${arg} was specified: ${check_param}`
           );
         }
@@ -38,13 +37,14 @@ export default class DotEnvConfig {
 
       return this.instance;
     } catch (err) {
-      if (!Logger) console.log(DotEnvConfig.log_header, String(err));
-      else Logger.printFatal(DotEnvConfig.log_header, String(err));
+      if (!Logger) console.log(DotEnvConfig.logHeader, String(err));
+      else Logger.printFatal(DotEnvConfig.logHeader, String(err));
+
       process.exit(1);
     }
   }
 
-  public get_param(key: Uppercase<string>, throwable = true): string | null {
+  public get(key: Uppercase<string>, throwable = true): string | null {
     let error;
 
     if (!process?.env?.[key] || !process?.env?.[key]!.length)

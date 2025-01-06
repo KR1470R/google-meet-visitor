@@ -1,18 +1,15 @@
 import { By, until, WebDriver, WebElement } from "selenium-webdriver";
-import { getRandomInt, Events } from "../utils/Util";
-import {
-  EVENTS,
-  ElementMeta,
-  ParserButtonWithInnerText,
-} from "../models/Models";
-import { Logger } from "utils/Util";
+import { Events, getRandomInt } from "../utils";
+import { ElementMeta, ParserButtonWithInnerText } from "../types";
+import { EVENTS } from "../constants";
+import { Logger } from "utils";
 import { setTimeout } from "node:timers/promises";
 
 /**
  * Helper for parse elements on page.
  */
 export default class Parser {
-  private readonly log_header = "Parser";
+  private readonly logHeader = "Parser";
 
   constructor(private driver: WebDriver) {}
 
@@ -26,13 +23,15 @@ export default class Parser {
   ): Promise<WebElement | undefined> {
     try {
       const found = await this.driver.findElement(By.css(name));
+
       return found;
     } catch (err) {
       Events.emitCheckable(
         EVENTS.exit,
         `ParserError: Element ${name} not found!`,
-        this.log_header
+        this.logHeader
       );
+
       return Promise.resolve(undefined);
     }
   }
@@ -59,7 +58,7 @@ export default class Parser {
         Events.emitCheckable(
           EVENTS.exit,
           `ParserError: Element <${tagname}> with text "${text}" not found!`,
-          this.log_header
+          this.logHeader
         );
       }
 
@@ -69,13 +68,14 @@ export default class Parser {
         Events.emitCheckable(
           EVENTS.exit,
           `ParserError: Element <${tagname}> with text "${text}" not found!`,
-          this.log_header
+          this.logHeader
         );
       } else
         Logger.printError(
-          this.log_header,
+          this.logHeader,
           `getElementByInnerText method error: ${err}`
         );
+
       return Promise.resolve(undefined);
     }
   }
@@ -113,28 +113,28 @@ export default class Parser {
       Events.emitCheckable(
         EVENTS.exit,
         `Invalid element metadata: tagname and xpath is undefined!`,
-        this.log_header
+        this.logHeader
       );
       return Promise.resolve();
     } else {
       const element_indicator = element?.tagname ? "tagname" : "xpath";
       try {
-        const target_el = await this.driver.wait(
+        const targetElement = await this.driver.wait(
           until.elementLocated(
             locator[element_indicator as keyof typeof locator]()
           ),
           timeout
         );
-        return target_el;
+        return targetElement;
       } catch (err) {
         if (throwable) {
           Events.emitCheckable(
             EVENTS.exit,
             `ParserError: Timeot of waiting for element '${element_indicator}'. Reason: ${err}`,
-            this.log_header
+            this.logHeader
           );
         } else
-          Logger.printError(this.log_header, `waitFor method error: ${err}`);
+          Logger.printError(this.logHeader, `waitFor method error: ${err}`);
         return Promise.resolve(undefined);
       }
     }
@@ -154,31 +154,31 @@ export default class Parser {
     timeout: number,
     throwable = true
   ) {
-    const fetch_elem = async (): Promise<WebElement | undefined> => {
-      const target_elem = await this.getElementByInnerText(name, text, false);
-      if (target_elem) return Promise.resolve(target_elem);
+    const fetchElement = async (): Promise<WebElement | undefined> => {
+      const targetElement = await this.getElementByInnerText(name, text, false);
+      if (targetElement) return Promise.resolve(targetElement);
       else {
         if (timeout <= 0) {
           if (throwable) {
             Events.emitCheckable(
               EVENTS.exit,
               `ParserError: Element <${name}> with text "${text}" not found!`,
-              this.log_header
+              this.logHeader
             );
             await this.driver.sleep(2000);
           } else
             Logger.printError(
-              this.log_header,
+              this.logHeader,
               `waitForElementWithInnerText method error: timeout fetching element ${name} with text ${text}`
             );
           return Promise.resolve(undefined);
         } else {
           timeout -= 500;
-          return fetch_elem();
+          return fetchElement();
         }
       }
     };
-    return fetch_elem();
+    return fetchElement();
   }
 
   /**
@@ -193,39 +193,39 @@ export default class Parser {
     timeout: number,
     throwable = true
   ) {
-    const fetch_elem = async (
+    const fetchElement = async (
       elem: ParserButtonWithInnerText
     ): Promise<WebElement | undefined> => {
-      const target_elem = await this.getElementByInnerText(
+      const targetElement = await this.getElementByInnerText(
         elem.name,
         elem.text,
         false
       );
-      if (target_elem) return Promise.resolve(target_elem);
+      if (targetElement) return Promise.resolve(targetElement);
       else {
         if (timeout <= 0) {
           if (throwable) {
             await this.driver.sleep(2000);
           } else
             Logger.printError(
-              this.log_header,
+              this.logHeader,
               `waitForElementWithInnerText method error: timeout fetching element <${elem.name}>${elem.text}</${elem.name}>`
             );
           return Promise.resolve(undefined);
         } else {
           timeout -= 500;
-          return fetch_elem(elem);
+          return fetchElement(elem);
         }
       }
     };
 
     const promises = elements.map(async (el: ParserButtonWithInnerText) => {
-      const found = await fetch_elem(el);
+      const found = await fetchElement(el);
+
       return found;
     });
 
     const founded = await Promise.race(promises);
-
     if (founded) return founded;
 
     if (throwable) {
@@ -234,10 +234,11 @@ export default class Parser {
         `ParserError: Couldn't find any of these elements: ${elements.map(
           (el) => `<${el.name}>${el.text}</${el.name}>`
         )}`,
-        this.log_header
+        this.logHeader
       );
       await setTimeout(2000);
     }
+
     return undefined;
   }
 }

@@ -7,10 +7,10 @@ import * as fs from "node:fs";
  * Build Google Chrome Extension of Visitor Recorder.
  */
 try {
-  const private_key_path = path.resolve(__dirname, "recorder", "key.pem");
+  const privateKeyPath = path.resolve(__dirname, "recorder", "key.pem");
 
   // @ts-ignore
-  const private_key = crypto.generateKeyPairSync("rsa", {
+  const privateKey = crypto.generateKeyPairSync("rsa", {
     modulusLength: 2048,
     privateKeyEncoding: {
       type: "pkcs8",
@@ -18,22 +18,22 @@ try {
     },
   }).privateKey;
 
-  fs.writeFileSync(private_key_path, private_key);
+  fs.writeFileSync(privateKeyPath, privateKey);
 
   const crx = new ChromeExtension({
     codebase: "http://localhost:8000/recorder_extension.crx",
-    privateKey: fs.readFileSync(private_key_path),
+    privateKey: fs.readFileSync(privateKeyPath),
   });
 
-  const source_crx_path = path.resolve(__dirname, "recorder", "extension");
-  const output_crx_path = path.resolve(__dirname, "recorder", "recorder.crx");
+  const sourceCrxPath = path.resolve(__dirname, "recorder", "extension");
+  const outputCrxPath = path.resolve(__dirname, "recorder", "recorder.crx");
 
-  console.log(`packing extension from ${source_crx_path}...`);
+  console.log(`packing extension from ${sourceCrxPath}...`);
   crx
-    .load(source_crx_path)
+    .load(sourceCrxPath)
     .then((crx: typeof ChromeExtension) => crx.pack())
     .then((crxBuffer: Buffer) => {
-      fs.writeFileSync(output_crx_path, crxBuffer);
+      fs.writeFileSync(outputCrxPath, crxBuffer);
       console.log("recorder extension packed successfully!");
     })
     .catch((err: Error) => {

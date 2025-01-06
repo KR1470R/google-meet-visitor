@@ -1,29 +1,30 @@
-import { WebSocketServer, AddressInfo, WebSocket } from "ws";
-import { Logger } from "../utils/Util";
-import { Config, Events, translateResponse } from "../utils/Util";
-import { EVENTS, RecorderData, IWSSErver } from "../models/Models";
-import findFreePort from "../lib/findFreePort";
+import { AddressInfo, WebSocket, WebSocketServer } from "ws";
+import { Config, Events, Logger, translateResponse } from "../utils";
+import { RecorderData } from "../types";
+import { EVENTS } from "../constants";
+import findFeePort from "../libs/find-fee-port";
+import { IWSServer } from "./interfaces";
 
 /**
  * Server that handle Chrome Extension requests.
  */
-export default class WSServer implements IWSSErver {
+export default class WSServer implements IWSServer {
+  private readonly logHeader = "Socket";
   private server!: WebSocketServer;
   private config!: Record<string, string | number>;
   private connected?: WebSocket;
   private listeners: Record<string, (data?: RecorderData | Buffer) => void> =
     {};
   private shouldClose = false;
-  private readonly log_header = "Socket";
 
   constructor() {}
 
   public init() {
     return new Promise<void>((resolve) => {
-      if (Config.get_param("RECORD_TAB", false) !== "true") {
+      if (Config.get("RECORD_TAB", false) !== "true") {
         resolve();
       } else {
-        findFreePort("localhost").then((free_port: number | number[]) => {
+        findFeePort("localhost").then((free_port: number | number[]) => {
           this.config = {
             host: "localhost",
             port: free_port as number,
@@ -31,37 +32,39 @@ export default class WSServer implements IWSSErver {
           this.server = new WebSocketServer(this.config);
 
           this.server.on("connection", (ws: WebSocket) => {
-            Logger.printInfo(
-              this.log_header,
-              "Client connected to the server!"
-            );
+            Logger.printInfo(this.logHeader, "Client connected to the server!");
             this.connected = ws;
+
             ws.on("message", (message: Buffer) => this.handleResponse(message));
+
             ws.on("error", (err) => {
-              Events.emitCheckable(EVENTS.exit, err, this.log_header);
+              Events.emitCheckable(EVENTS.exit, err, this.logHeader);
             });
+
             ws.on("close", (code: number, reason: Buffer) => {
               const reason_translated = translateResponse(reason);
               if (!this.shouldClose) {
                 Events.emitCheckable(
                   EVENTS.exit,
                   `Connection with client closed suddenly: ${reason_translated}(status: ${code})`,
-                  this.log_header
+                  this.logHeader
                 );
               }
             });
           });
+
           this.server.on("listening", () => {
             const address = "localhost"; //this.getAddressKey("address");
             const port = this.getAddressKey("port");
             Logger.printInfo(
-              this.log_header,
+              this.logHeader,
               `Open for client connection at ${address}:${port}.`
             );
             resolve();
           });
+
           this.server.on("close", () => {
-            Logger.printInfo(this.log_header, "Closed.");
+            Logger.printInfo(this.logHeader, "Closed.");
             if (!this.shouldClose) Events.emitCheckable(EVENTS.exit);
           });
         });
@@ -69,42 +72,10 @@ export default class WSServer implements IWSSErver {
     });
   }
 
-  private handleResponse(response: Buffer) {
-    if (!Object.keys(this.listeners).length) return;
-
-    const translated = translateResponse(response);
-    if (Buffer.isBuffer(translated)) {
-      const target_listener = this.listeners?.[EVENTS.record_chunk];
-      if (!target_listener) {
-        Events.emitCheckable(
-          EVENTS.exit,
-          `Unkown received message type when loaded chunks`,
-          this.log_header
-        );
-        return;
-      }
-
-      target_listener(translated);
-    } else {
-      const target_listener: (data?: RecorderData) => void | undefined =
-        this.listeners?.[translated!.type];
-      if (!target_listener) {
-        Events.emitCheckable(
-          EVENTS.exit,
-          `Unkown received message type: ${translated.type}`,
-          this.log_header
-        );
-        return;
-      }
-
-      target_listener(translated.data);
-    }
-  }
-
   public closeConnection() {
     return new Promise<void>((resolve) => {
       if (this.isConnected()) {
-        Logger.printInfo(this.log_header, "Closing connection...");
+        Logger.printInfo(this.logHeader, "Closing connection...");
         this.shouldClose = true;
         this.connected!.close();
         this.connected = undefined;
@@ -118,7 +89,7 @@ export default class WSServer implements IWSSErver {
   public send(message: string) {
     if (!this.isConnected()) {
       Logger.printWarning(
-        this.log_header,
+        this.logHeader,
         "No connected clients. Rejecting send message."
       );
       return;
@@ -138,6 +109,39 @@ export default class WSServer implements IWSSErver {
     const params = this.server?.address() as AddressInfo;
     const target_key = params?.[key as keyof typeof params];
     if (target_key) return target_key;
+
     return null;
+  }
+
+  private handleResponse(response: Buffer) {
+    if (!Object.keys(this.listeners).length) return;
+
+    const translated = translateResponse(response);
+    if (Buffer.isBuffer(translated)) {
+      const targetListener = this.listeners?.[EVENTS.record_chunk];
+      if (!targetListener) {
+        Events.emitCheckable(
+          EVENTS.exit,
+          `Unkown received message type when loaded chunks`,
+          this.logHeader
+        );
+        return;
+      }
+
+      targetListener(translated);
+    } else {
+      const targetListener: (data?: RecorderData) => void | undefined =
+        this.listeners?.[translated!.type];
+      if (!targetListener) {
+        Events.emitCheckable(
+          EVENTS.exit,
+          `Unkown received message type: ${translated.type}`,
+          this.logHeader
+        );
+        return;
+      }
+
+      targetListener(translated.data);
+    }
   }
 }

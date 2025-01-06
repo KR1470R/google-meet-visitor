@@ -1,32 +1,33 @@
 {
-  "compilerOptions": {
-      "allowSyntheticDefaultImports": true,
-      "moduleResolution": "nodenext",
-      "resolveJsonModule": true,
-      "esModuleInterop": true,
-      "strict": true,
-      "noImplicitReturns": true,
-      "alwaysStrict": true,
-      "noFallthroughCasesInSwitch": true,
-      "incremental": true,
-      "removeComments": true,
-      "sourceMap": false,
-      "target": "ES6",
-      "module": "CommonJS",
-      "noErrorTruncation": true,
-      "importHelpers": false,
-      "baseUrl": "./src",
-      "rootDir": "./",
-      "outDir": "./dist",
-      "allowJs": false,
-  },
-  "include": [
-      "src/**/*",
-      "configs/*"
-, "src/recorder/extension/extension"    ],
-  "exclude": [
-      "node_modules",
-      "src/renderer/static",
-      "dist"
-  ],
+    "compilerOptions": {
+        "allowSyntheticDefaultImports": true,
+        "moduleResolution": "nodenext",
+        "resolveJsonModule": true,
+        "esModuleInterop": true,
+        "strict": true,
+        "noImplicitReturns": true,
+        "alwaysStrict": true,
+        "noFallthroughCasesInSwitch": true,
+        "incremental": true,
+        "removeComments": true,
+        "sourceMap": false,
+        "target": "ES6",
+        "module": "CommonJS",
+        "noErrorTruncation": true,
+        "importHelpers": false,
+        "baseUrl": "./src",
+        "rootDir": "./",
+        "outDir": "./dist",
+        "allowJs": false
+    },
+    "include": [
+        "src/**/*",
+        "configs/*",
+        "src/recorder/extension/extension"
+    ],
+    "exclude": [
+        "node_modules",
+        "src/renderer/static",
+        "dist"
+    ]
 }

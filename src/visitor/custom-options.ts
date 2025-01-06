@@ -1,6 +1,5 @@
 import { Options } from "selenium-webdriver/chrome";
-import { Logger } from "../utils/Util";
-import { Config, isDirExist, parseUserDir } from "../utils/Util";
+import { Config, isDirExist, Logger, parseUserDir } from "../utils";
 import * as path from "node:path";
 
 /**
@@ -8,7 +7,7 @@ import * as path from "node:path";
  * Defines parameters for browser specified by user.
  */
 export default class CustomOptions extends Options {
-  private readonly log_header = "ChromeOptions";
+  private readonly logHeader = "ChromeOptions";
 
   constructor() {
     super();
@@ -36,35 +35,35 @@ export default class CustomOptions extends Options {
       // "--disable-application-cache",
     ]);
 
-    const crx_path = path.resolve("dist", "recorder", "recorder.crx");
+    const crxPath = path.resolve("dist", "recorder", "recorder.crx");
     Logger.printInfo(
-      this.log_header,
-      `Loading recorder extension from ${crx_path}.`
+      this.logHeader,
+      `Loading recorder extension from ${crxPath}.`
     );
-    this.addExtensions(crx_path);
+    this.addExtensions(crxPath);
 
-    const user_data_dir_path = Config.get_param("USER_DATA_DIR");
-    if (user_data_dir_path && isDirExist(user_data_dir_path)) {
-      const user_dir_data = parseUserDir(user_data_dir_path);
-      this.addArguments(`--user-data-dir=${user_dir_data.dir_path}`);
-      this.addArguments(`--profile-directory=${user_dir_data.profile_name}`);
+    const userDataDirPath = Config.get("USER_DATA_DIR");
+    if (userDataDirPath && isDirExist(userDataDirPath)) {
+      const userDirData = parseUserDir(userDataDirPath);
+      this.addArguments(`--user-data-dir=${userDirData.dir_path}`);
+      this.addArguments(`--profile-directory=${userDirData.profile_name}`);
     } else {
       Logger.printFatal(
-        this.log_header,
-        `User Data Directory does not exist by this path: ${user_data_dir_path}`
+        this.logHeader,
+        `User Data Directory does not exist by this path: ${userDataDirPath}`
       );
       process.exit(1);
     }
 
-    if (Config.get_param("MINIMIZED", false) === "true") {
-      Logger.printInfo(this.log_header, "Running browser in background.");
-    } else Logger.printInfo(this.log_header, "Running browser in foreground.");
+    if (Config.get("MINIMIZED", false) === "true") {
+      Logger.printInfo(this.logHeader, "Running browser in background.");
+    } else Logger.printInfo(this.logHeader, "Running browser in foreground.");
 
-    if (Config.get_param("MUTE", false) === "true") {
-      Logger.printInfo(this.log_header, "Audio is muted.");
+    if (Config.get("MUTE", false) === "true") {
+      Logger.printInfo(this.logHeader, "Audio is muted.");
       this.addArguments("--mute-audio");
     } else {
-      Logger.printInfo(this.log_header, "Audio is unmuted.");
+      Logger.printInfo(this.logHeader, "Audio is unmuted.");
     }
 
     this.detachDriver(true);

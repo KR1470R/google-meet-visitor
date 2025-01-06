@@ -1,27 +1,24 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import { Builder, WebDriver, Key, until } from "selenium-webdriver";
+import { Builder, Key, until, WebDriver } from "selenium-webdriver";
 import chrome from "selenium-webdriver/chrome";
-import CustomOptions from "./CustomOptions";
-import Parser from "./Parser";
-import { Logger } from "../utils/Util";
-import { setTimeout } from "node:timers/promises";
-import pslist from "../lib/ps-list";
+import CustomOptions from "./custom-options";
+import Parser from "./parser";
 import {
-  EVENTS,
-  IVisitor,
-  BrowserProcessNix,
-  BrowserProcessWindows,
-} from "../models/Models";
-import {
+  Config,
   Events,
+  getRandomInt,
+  isFileExist,
+  Logger,
   minutesToMs,
   predictFinishDate,
   Socket,
-  Config,
   timeoutWhileCondition,
-  isFileExist,
-  getRandomInt,
-} from "../utils/Util";
+} from "../utils";
+import { setTimeout } from "node:timers/promises";
+import pslist from "../libs/ps-list";
+import { BrowserProcessNix, BrowserProcessWindows } from "../types";
+import { EVENTS } from "../constants";
+import { IVisitor } from "./interfaces";
 
 /**
  * Visitor that performs such actions:
@@ -32,35 +29,35 @@ import {
  *  - stay at call for a time specified by user.
  */
 export default class Visitor implements IVisitor {
-  private readonly log_header = "Visitor";
+  private readonly logHeader = "Visitor";
 
-  private target_url: string;
+  private targetUrl: string;
   private driver!: WebDriver;
   private service!: chrome.ServiceBuilder;
   private options!: CustomOptions;
   private parser!: Parser;
 
-  private pending_shutdown = false;
+  private pendingShutdown = false;
   private alive = false;
-  private is_freezed = false;
-  private is_joined_call = false;
+  private isFroze = false;
+  private isJoinedCall = false;
 
-  private browser_process!: BrowserProcessNix | BrowserProcessWindows;
+  private browserProcess!: BrowserProcessNix | BrowserProcessWindows;
 
   constructor(target_url: string) {
-    this.target_url = target_url;
+    this.targetUrl = target_url;
 
     this.options = new CustomOptions();
   }
 
-  public async init_driver(webdriver_path: string) {
+  public async initDriver(webdriverPath: string) {
     try {
-      if (!isFileExist(webdriver_path))
+      if (!isFileExist(webdriverPath))
         throw new Error(
-          `Webdriver executor does not exist on this path: ${webdriver_path}`
+          `Webdriver executor does not exist on this path: ${webdriverPath}`
         );
 
-      this.service = new chrome.ServiceBuilder(webdriver_path);
+      this.service = new chrome.ServiceBuilder(webdriverPath);
       this.driver = await new Builder()
         .forBrowser("chrome")
         .setChromeService(this.service)
@@ -69,7 +66,7 @@ export default class Visitor implements IVisitor {
 
       this.alive = true;
 
-      this.browser_process = await this.getBrowserInstanceProcess();
+      this.browserProcess = await this.getBrowserInstanceProcess();
 
       await this.minimize();
 
@@ -88,14 +85,89 @@ export default class Visitor implements IVisitor {
   public async start() {
     await this.sleep(2000);
 
-    await this.start_call();
+    await this.startCall();
 
     this.sleep(1000);
 
     await this.leaveCall();
 
-    Logger.printInfo(this.log_header, "Finished task successfully!");
+    Logger.printInfo(this.logHeader, "Finished task successfully!");
     this.sleep(2000);
+  }
+
+  /**
+   * Simple leaving call.
+   */
+  public async leaveCall() {
+    Logger.printInfo(this.logHeader, "Leaving call...");
+
+    if (!this.isJoinedCall) {
+      Logger.printWarning(this.logHeader, "Not at call, skipping");
+      return;
+    }
+
+    const leave_button = await this.parser.getElementByTagName(
+      "button[aria-label='Leave call'][role=button]"
+    );
+
+    await setTimeout(1000);
+    await leave_button?.click();
+  }
+
+  public async minimize() {
+    if (!this.alive || Config.get("MINIMIZED", false) !== "true") return;
+
+    await this.resize();
+    await this.driver.manage().window().minimize();
+  }
+
+  public async maximize() {
+    if (!this.alive) return;
+
+    await this.driver.manage().window().maximize();
+  }
+
+  public async resize() {
+    await this.driver
+      .manage()
+      .window()
+      .setRect({
+        width: Math.max(
+          parseInt(Config.get("WIDTH_PX", false) || "1000"),
+          1000
+        ),
+        height: Math.max(
+          parseInt(Config.get("HEIGHT_PX", false) || "800"),
+          800
+        ),
+      });
+  }
+
+  public sleep(ms: number) {
+    return this.driver.sleep(ms);
+  }
+
+  public async shutdown() {
+    if (!this.alive || this.pendingShutdown) return;
+
+    this.pendingShutdown = true;
+
+    Logger.printInfo(this.logHeader, "Shutdown.");
+
+    process.kill(this.browserProcess.pid);
+
+    await this.driver.close();
+    await this.driver.quit();
+  }
+
+  public freeze() {
+    Logger.printWarning(this.logHeader, "Freezed!");
+    this.isFroze = true;
+  }
+
+  public unfreeze() {
+    Logger.printWarning(this.logHeader, "Unfreezed!");
+    this.isFroze = false;
   }
 
   /**
@@ -103,7 +175,7 @@ export default class Visitor implements IVisitor {
    */
   private async provideLoginIsRequred() {
     Logger.printInfo(
-      this.log_header,
+      this.logHeader,
       "Checking is google account login required..."
     );
 
@@ -119,13 +191,13 @@ export default class Visitor implements IVisitor {
     );
 
     if (!signInBtn) {
-      Logger.printInfo(this.log_header, "Already logined.");
+      Logger.printInfo(this.logHeader, "Already logined.");
       return Promise.resolve();
     }
 
     await signInBtn.click();
 
-    const is_signed = await timeoutWhileCondition(
+    const isSigned = await timeoutWhileCondition(
       (async () =>
         (
           await this.driver.getCurrentUrl()
@@ -134,21 +206,21 @@ export default class Visitor implements IVisitor {
       false
     );
 
-    if (is_signed) {
-      await this.driver.get(this.target_url);
+    if (isSigned) {
+      await this.driver.get(this.targetUrl);
 
       if (
         await (
           await this.driver.getCurrentUrl()
         ).includes("https://meet.google.com/")
       ) {
-        Logger.printInfo(this.log_header, "Logined.");
+        Logger.printInfo(this.logHeader, "Logined.");
         return Promise.resolve();
       }
     }
 
     Logger.printInfo(
-      this.log_header,
+      this.logHeader,
       "Sign in required, waiting for 5 minutes untill the user perform login..."
     );
 
@@ -162,9 +234,9 @@ export default class Visitor implements IVisitor {
       300000
     );
 
-    await this.driver.get(this.target_url);
+    await this.driver.get(this.targetUrl);
 
-    Logger.printInfo(this.log_header, "Logined.");
+    Logger.printInfo(this.logHeader, "Logined.");
   }
 
   /**
@@ -172,7 +244,7 @@ export default class Visitor implements IVisitor {
    * If user have no access - stop visitor and throw error to logs.
    */
   private async canIJoinCall() {
-    Logger.printInfo(this.log_header, "Checking can i join call...");
+    Logger.printInfo(this.logHeader, "Checking can i join call...");
 
     await this.checkFreeze();
 
@@ -187,7 +259,7 @@ export default class Visitor implements IVisitor {
       Events.emitCheckable(
         EVENTS.exit,
         "I cannot join this call!",
-        this.log_header
+        this.logHeader
       );
       await this.sleep(2000);
     } else return Promise.resolve();
@@ -199,13 +271,13 @@ export default class Visitor implements IVisitor {
   private async disableMediaDevices() {
     await this.checkFreeze();
 
-    Logger.printInfo(this.log_header, "Disabling media devices at call...");
+    Logger.printInfo(this.logHeader, "Disabling media devices at call...");
 
-    const isCamMuted = Config.get_param("GMEET_CAM_MUTE", false) === "true";
-    const isMicroMuted = Config.get_param("GMEET_MIC_MUTE", false) === "true";
+    const isCamMuted = Config.get("GMEET_CAM_MUTE", false) === "true";
+    const isMicroMuted = Config.get("GMEET_MIC_MUTE", false) === "true";
 
     if (isCamMuted) {
-      Logger.printInfo(this.log_header, "Disabling camera...");
+      Logger.printInfo(this.logHeader, "Disabling camera...");
       await this.driver
         .actions()
         .keyDown(Key.CONTROL)
@@ -216,7 +288,7 @@ export default class Visitor implements IVisitor {
     }
 
     if (isMicroMuted) {
-      Logger.printInfo(this.log_header, "Disabling microphone...");
+      Logger.printInfo(this.logHeader, "Disabling microphone...");
 
       await this.driver
         .actions()
@@ -230,9 +302,10 @@ export default class Visitor implements IVisitor {
   /**
    * Makes all user actions to perfom join call.
    */
-  private async start_call() {
+  private async startCall() {
     await this.checkFreeze();
-    Logger.printInfo(this.log_header, `Starting call at ${this.target_url}...`);
+    Logger.printInfo(this.logHeader, `Starting call at ${this.targetUrl}...`);
+
     await this.disableMediaDevices();
     await this.sleep(2000);
     await this.joinCall();
@@ -246,48 +319,48 @@ export default class Visitor implements IVisitor {
    * Prevents windows like "Are you here?" to stay at call.
    */
   private async stayAtCallWhile() {
-    this.is_joined_call = true;
+    this.isJoinedCall = true;
     await this.checkFreeze();
 
-    const minutes = parseInt(Config.get_param("CALL_TIMER_MINUTES")!);
+    const minutes = parseInt(Config.get("CALL_TIMER_MINUTES")!);
     if (Number.isNaN(minutes)) {
       Events.emitCheckable(
         EVENTS.exit,
         `Failed in parsing timer input: '${minutes}' is not a number!`,
-        this.log_header
+        this.logHeader
       );
     }
 
     Logger.printInfo(
-      this.log_header,
+      this.logHeader,
       `Staying at call till ${predictFinishDate(
         minutesToMs(minutes)
       )}(${minutes} minute${minutes > 1 ? "s" : ""})`
     );
 
     let ms = minutesToMs(minutes);
-    const timer_offset_ms = 1000;
-    const timer_for_stay_call = 60000;
+    const timerOffsetMs = 1000;
+    const timerForStayCall = 60000;
 
     while (ms >= 0) {
-      if (ms >= timer_for_stay_call) {
-        const timer_start = performance.now();
-        const target_el = await this.parser.waitFor(
+      if (ms >= timerForStayCall) {
+        const timerStart = performance.now();
+        const targetElement = await this.parser.waitFor(
           {
             xpath: "//*[contains(text(), 'Stay in the call')]/parent::button",
           },
-          timer_for_stay_call,
+          timerForStayCall,
           false
         );
-        if (target_el && until.stalenessOf(target_el)) {
+        if (targetElement && until.stalenessOf(targetElement)) {
           await this.sleep(2000);
-          await target_el?.click();
+          await targetElement?.click();
         }
-        const timer_end = performance.now();
-        ms -= timer_end - timer_start;
+        const timerEnd = performance.now();
+        ms -= timerEnd - timerStart;
       } else {
-        await setTimeout(timer_offset_ms);
-        ms -= timer_offset_ms;
+        await setTimeout(timerOffsetMs);
+        ms -= timerOffsetMs;
       }
     }
 
@@ -300,9 +373,9 @@ export default class Visitor implements IVisitor {
   private async joinCall() {
     await this.checkFreeze();
 
-    Logger.printInfo(this.log_header, "Joining call...");
+    Logger.printInfo(this.logHeader, "Joining call...");
 
-    const button_join = await this.parser.waitForOneOfElementsWithInnerText(
+    const buttonJoin = await this.parser.waitForOneOfElementsWithInnerText(
       [
         { name: "button", text: "Join now" },
         { name: "button", text: "Switch here" },
@@ -311,15 +384,15 @@ export default class Visitor implements IVisitor {
       false
     );
 
-    if (button_join) {
+    if (buttonJoin) {
       await this.sleep(2000);
-      await button_join?.click();
-      Logger.printInfo(this.log_header, "Joined!");
-      this.is_joined_call = true;
+      await buttonJoin?.click();
+      Logger.printInfo(this.logHeader, "Joined!");
+      this.isJoinedCall = true;
     } else {
-      Logger.printError(this.log_header, "Couldn't find join button!");
+      Logger.printError(this.logHeader, "Couldn't find join button!");
       Logger.printWarning(
-        this.log_header,
+        this.logHeader,
         "Checking is user has permissions to join..."
       );
       await this.askToJoin();
@@ -329,7 +402,7 @@ export default class Visitor implements IVisitor {
   private async askToJoin() {
     await this.checkFreeze();
 
-    const ask_to_join = await this.parser.waitFor(
+    const askToJoin = await this.parser.waitFor(
       {
         xpath: "//*[contains(text(), 'Ask to join')]/parent::button",
       },
@@ -337,58 +410,37 @@ export default class Visitor implements IVisitor {
       false
     );
 
-    if (ask_to_join) {
-      const timer_min = parseInt(
-        Config.get_param("ASK_JOIN_WAIT_MIN", false) || "10"
-      );
+    if (askToJoin) {
+      const timerMin = parseInt(Config.get("ASK_JOIN_WAIT_MIN", false) || "10");
 
       Logger.printWarning(
-        this.log_header,
-        `Asked for join call. Waiting for ${timer_min} minutes.`
+        this.logHeader,
+        `Asked for join call. Waiting for ${timerMin} minutes.`
       );
-      await ask_to_join.click();
-      const leave_button = await this.parser.waitFor(
+      await askToJoin.click();
+      const leaveButton = await this.parser.waitFor(
         {
           tagname: "button[aria-label='Leave call'][role=button]",
         },
-        minutesToMs(timer_min),
+        minutesToMs(timerMin),
         false
       );
-      if (!leave_button) {
+      if (!leaveButton) {
         Events.emitCheckable(
           EVENTS.exit,
           "Host didn't accepted your request to join call!",
-          this.log_header
+          this.logHeader
         );
         this.sleep(5000);
-      } else Logger.printInfo(this.log_header, "Joined!");
+      } else Logger.printInfo(this.logHeader, "Joined!");
     } else {
       Events.emitCheckable(
         EVENTS.exit,
         "Uknown error to join this call",
-        this.log_header
+        this.logHeader
       );
       this.sleep(2000);
     }
-  }
-
-  /**
-   * Simple leaving call.
-   */
-  public async leaveCall() {
-    Logger.printInfo(this.log_header, "Leaving call...");
-
-    if (!this.is_joined_call) {
-      Logger.printWarning(this.log_header, "Not at call, skipping");
-      return;
-    }
-
-    const leave_button = await this.parser.getElementByTagName(
-      "button[aria-label='Leave call'][role=button]"
-    );
-
-    await setTimeout(1000);
-    await leave_button?.click();
   }
 
   /**
@@ -397,82 +449,28 @@ export default class Visitor implements IVisitor {
   private async provideSocketPort() {
     await this.checkFreeze();
 
-    const server_port = Socket.getAddressKey("port");
+    const serverPort = Socket.getAddressKey("port");
 
-    if (server_port) {
-      Logger.printInfo(this.log_header, "Sending server port to extension");
+    if (serverPort) {
+      Logger.printInfo(this.logHeader, "Sending server port to extension");
       await this.driver.executeScript(
         `
-        localStorage.setItem("recorder_port", ${String(server_port)});
+        localStorage.setItem("recorder_port", ${String(serverPort)});
         `
       );
-    } else Logger.printWarning(this.log_header, "Server port is null");
-  }
-
-  public async minimize() {
-    if (!this.alive || Config.get_param("MINIMIZED", false) !== "true") return;
-    await this.resize();
-    await this.driver.manage().window().minimize();
-  }
-
-  public async maximize() {
-    if (!this.alive) return;
-    await this.driver.manage().window().maximize();
-  }
-
-  public async resize() {
-    await this.driver
-      .manage()
-      .window()
-      .setRect({
-        width: Math.max(
-          parseInt(Config.get_param("WIDTH_PX", false) || "1000"),
-          1000
-        ),
-        height: Math.max(
-          parseInt(Config.get_param("HEIGHT_PX", false) || "800"),
-          800
-        ),
-      });
-  }
-
-  public sleep(ms: number) {
-    return this.driver.sleep(ms);
-  }
-
-  public async shutdown() {
-    if (!this.alive || this.pending_shutdown) return;
-
-    this.pending_shutdown = true;
-
-    Logger.printInfo(this.log_header, "Shutdown.");
-
-    process.kill(this.browser_process.pid);
-
-    await this.driver.close();
-    await this.driver.quit();
-  }
-
-  public freeze() {
-    Logger.printWarning(this.log_header, "Freezed!");
-    this.is_freezed = true;
-  }
-
-  public unfreeze() {
-    Logger.printWarning(this.log_header, "Unfreezed!");
-    this.is_freezed = false;
+    } else Logger.printWarning(this.logHeader, "Server port is null");
   }
 
   /**
    * Handle visitor freezing by:
    *  - waiting for random element on page
-   *  - repeat untill is_freezed flag be equal false
+   *  - repeat untill isFroze flag be equal false
    */
   private checkFreeze() {
     return new Promise<void>((resolve) => {
-      const probe_interval = setInterval(async () => {
-        if (!this.is_freezed) {
-          clearInterval(probe_interval);
+      const probeInterval = setInterval(async () => {
+        if (!this.isFroze) {
+          clearInterval(probeInterval);
           resolve();
         } else {
           await this.parser.waitForElementWithInnerText.call(
@@ -494,16 +492,16 @@ export default class Visitor implements IVisitor {
   private async getBrowserInstanceProcess() {
     const processes = await pslist();
 
-    const [chromedriver_process] = processes.filter((process) =>
+    const [chromeDriverProcess] = processes.filter((process) =>
       process.name.toLowerCase().includes("chromedriver")
     );
-    const [browser_process] = processes.filter((process) => {
+    const [browserProcess] = processes.filter((process) => {
       return (
-        process.ppid === chromedriver_process.pid &&
+        process.ppid === chromeDriverProcess.pid &&
         process.name.toLowerCase().includes("chrome")
       );
     });
 
-    return browser_process;
+    return browserProcess;
   }
 }

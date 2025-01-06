@@ -1,17 +1,17 @@
-import { SignalCallbackType } from "../models/Models";
-import { Logger } from "./Util";
+import { SignalCallbackType } from "../types";
+import { Logger } from "./index";
 
 /**
  * Process signal observer
  * Executes callbacks before program will be terminated because of unhandled error or user interruption.
  */
 export default class SignalManager {
-  private readonly log_header = "SignalManager";
+  public alreadyCatched = false;
+  private readonly logHeader = "SignalManager";
   private readonly timeout = 60000;
   private callbacks: SignalCallbackType[];
-  private normal_exit_signals = ["SIGINT", "SIGQUIT", "SIGTERM"];
-  private error_exit_signals = ["uncaughtException", "unhandledRejection"];
-  public already_catched = false;
+  private normalExitSignals = ["SIGINT", "SIGQUIT", "SIGTERM"];
+  private errorExitSignals = ["uncaughtException", "unhandledRejection"];
 
   constructor() {
     this.callbacks = [];
@@ -26,16 +26,16 @@ export default class SignalManager {
 
     let status_code: 0 | 1 = 0;
 
-    for (const normal_signal of this.normal_exit_signals) {
-      process.on(normal_signal, () => {
-        if (this.already_catched) return;
+    for (const normalSignal of this.normalExitSignals) {
+      process.on(normalSignal, () => {
+        if (this.alreadyCatched) return;
 
-        this.already_catched = true;
+        this.alreadyCatched = true;
 
         setTimeout(() => process.exit(status_code), this.timeout);
 
         Logger.printWarning(
-          this.log_header,
+          this.logHeader,
           "Interrupted by user! Performing last operations..."
         );
 
@@ -45,16 +45,16 @@ export default class SignalManager {
       });
     }
 
-    for (const error_signal of this.error_exit_signals) {
-      process.on(error_signal, (err) => {
-        if (this.already_catched) return;
+    for (const errorSignal of this.errorExitSignals) {
+      process.on(errorSignal, (err) => {
+        if (this.alreadyCatched) return;
 
-        this.already_catched = true;
+        this.alreadyCatched = true;
 
         setTimeout(() => process.exit(status_code), this.timeout);
 
         Logger.printWarning(
-          this.log_header,
+          this.logHeader,
           `Interrupted by unhandled exception! Performing last operations...\nERROR:${err.name}: ${err.stack}`
         );
 

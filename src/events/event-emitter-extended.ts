@@ -1,7 +1,7 @@
 import { EventEmitter } from "events";
-import { Logger } from "../utils/Util";
+import { Logger } from "../utils";
 import process from "process";
-import { EVENTS } from "../models/Models";
+import { EVENTS } from "../constants";
 
 export default class EventEmitterExtended extends EventEmitter {
   private static instance?: EventEmitterExtended;
@@ -17,13 +17,13 @@ export default class EventEmitterExtended extends EventEmitter {
   public emitCheckable(
     event: string,
     content?: string | Error,
-    log_header = "EventEmmiter"
+    logHeader = "EventEmmiter"
   ) {
     if (!this.listenerCount(event)) {
       if (event !== EVENTS.exit)
-        Logger.printFatal(log_header, `No listeners found for ${event}!`);
+        Logger.printFatal(logHeader, `No listeners found for ${event}!`);
 
-      if (content) Logger.printFatal(log_header, String(content));
+      if (content) Logger.printFatal(logHeader, String(content));
       process.exit(1);
     } else this.emit(event, String(content));
   }

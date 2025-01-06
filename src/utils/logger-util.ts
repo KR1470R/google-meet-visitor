@@ -1,5 +1,5 @@
 import pino from "pino";
-import { Config } from "./Util";
+import { Config } from "./index";
 
 const log = pino({
   transport: {
@@ -27,7 +27,7 @@ export default class LoggerUtil {
     if (
       typeof Config === "undefined"
         ? false
-        : Config.get_param("IGNORE_ERRORS", false) === "true"
+        : Config.get("IGNORE_ERRORS", false) === "true"
     )
       return;
     log.error(`[${header}] -> ${content}`);

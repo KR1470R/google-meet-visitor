@@ -1,22 +1,21 @@
-import Visitor from "./visitor/Visitor";
-import { Events, Recorder, Config, Socket } from "./utils/Util";
-import { Logger } from "./utils/Util";
-import WebDriverManager from "./drivers/WebDriverManager";
-import { EVENTS } from "models/Models";
-import SignalManager from "utils/SignalManager";
+import Visitor from "./visitor/visitor";
+import { Config, Events, Logger, Recorder, Socket } from "./utils";
+import WebDriverManager from "./drivers/web-driver-manager";
+import { EVENTS } from "./constants";
+import SignalManager from "utils/signal-manager";
 
 /**
  * The root of the program.
  * Runs all necessary components and services.
  */
 class MainApp {
-  private readonly log_header = "index";
+  private readonly logHeader = "kernel";
   private webDriverManager: WebDriverManager;
   private visitor: Visitor;
   private signalManager: SignalManager;
 
   constructor() {
-    const target_link = Config.get_param("TARGET_CALL_LINK")!;
+    const target_link = Config.get("TARGET_CALL_LINK")!;
 
     this.webDriverManager = new WebDriverManager();
     this.visitor = new Visitor(target_link);
@@ -31,11 +30,11 @@ class MainApp {
     });
 
     Events.on(EVENTS.exit, async (error?: string) => {
-      if (this.signalManager.already_catched) return;
+      if (this.signalManager.alreadyCatched) return;
 
       let exitCode = 0;
       if (error) {
-        Logger.printFatal(this.log_header, error);
+        Logger.printFatal(this.logHeader, error);
         exitCode = 1;
       }
 
@@ -55,7 +54,7 @@ class MainApp {
       await this.webDriverManager.provideChromeDriver();
       await Socket.init();
       await Recorder.init();
-      await this.visitor.init_driver(this.webDriverManager.chromedriver_path);
+      await this.visitor.initDriver(this.webDriverManager.chromeDriverPath);
       await Recorder.awaitForSocketReady();
       await this.visitor.maximize();
       await Recorder.chooseStream();
@@ -69,10 +68,11 @@ class MainApp {
       // Exit after work finished.
       await this.visitor.shutdown();
     } catch (err) {
+      console.log(err);
       Events.emitCheckable(
         EVENTS.exit,
         `Failed to start: ${(err as Error).message || err}`,
-        this.log_header
+        this.logHeader
       );
     }
   }

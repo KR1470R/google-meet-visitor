@@ -1,66 +1,68 @@
-import { EVENTS, RecorderData, IRecordManager } from "../models/Models";
-import { Logger } from "../utils/Util";
-import path from "node:path";
+import { RecorderData } from "../types";
+import { EVENTS } from "../constants";
+import { IRecordManager } from "./interfaces";
 import {
-  isDirExist,
-  Events,
-  splitDate,
-  Socket,
-  timeoutWhileCondition,
   Config,
-} from "../utils/Util";
+  Events,
+  isDirExist,
+  Logger,
+  Socket,
+  splitDate,
+  timeoutWhileCondition,
+} from "../utils";
+import path from "node:path";
 import * as fs from "node:fs";
 
 /**
  * Record Manager that provide controll Media Stream from Chrome extension and its output saving.
  */
 export default class RecordManager implements IRecordManager {
-  private readonly log_header = "Recorder";
-  private output_stream?: fs.WriteStream;
+  private readonly logHeader = "Recorder";
+  private outputStream?: fs.WriteStream;
   private path?: string;
-  private activated: boolean;
+  private isActivated: boolean;
   private ready = false;
-  private is_stream_choosed = false;
+  private isStreamChosen = false;
 
   constructor() {
-    this.activated = Config.get_param("RECORD_TAB", false) === "true";
-    const user_folder = Config.get_param("OUTPUT_RECORD_TAB", false);
-    const default_folder = path.resolve(__dirname, "records");
-    const current_date = splitDate();
+    this.isActivated = Config.get("RECORD_TAB", false) === "true";
+    const userDir = Config.get("OUTPUT_RECORD_TAB", false);
+    const defaultDir = path.resolve(__dirname, "records");
+    const currentDate = splitDate();
     const filename = `\
 output_video_\
-${current_date.day}_\
-${current_date.month}_\
-${current_date.year}_\
-${current_date.h}_\
-${current_date.m}_\
-${current_date.s}.mp4`;
-    const target_folder = user_folder || default_folder;
-    if (isDirExist(target_folder)) {
-      this.path = path.resolve(__dirname, target_folder, filename);
+${currentDate.day}_\
+${currentDate.month}_\
+${currentDate.year}_\
+${currentDate.h}_\
+${currentDate.m}_\
+${currentDate.s}.mp4`;
+    const targetDir = userDir || defaultDir;
+    if (isDirExist(targetDir)) {
+      this.path = path.resolve(__dirname, targetDir, filename);
     } else {
       Events.emitCheckable(
         EVENTS.exit,
-        `Output folder for records does not exist - ${target_folder}`,
-        this.log_header
+        `Output folder for records does not exist - ${targetDir}`,
+        this.logHeader
       );
     }
   }
 
   public init() {
-    if (!this.activated) {
-      Logger.printInfo(this.log_header, "Disabled.");
+    if (!this.isActivated) {
+      Logger.printInfo(this.logHeader, "Disabled.");
       return;
     }
 
     Socket.on(EVENTS.record_ready, () => {
       this.ready = true;
-      this.output_stream = fs.createWriteStream(this.path!);
+      this.outputStream = fs.createWriteStream(this.path!);
     });
     Socket.on(EVENTS.record_chunk, (data?: RecorderData | Buffer) => {
       if (!Buffer.isBuffer(data)) return;
 
-      this.output_stream?.write(data);
+      this.outputStream?.write(data);
     });
     Socket.on(EVENTS.record_error, async (data?: RecorderData | Buffer) => {
       if (Buffer.isBuffer(data)) return;
@@ -70,22 +72,22 @@ ${current_date.s}.mp4`;
         Events.emitCheckable(
           EVENTS.exit,
           "Unkown recorder error!",
-          this.log_header
+          this.logHeader
         );
         return;
       }
       Events.emitCheckable(
         EVENTS.exit,
         `Recorder error: ${data!.error}`,
-        this.log_header
+        this.logHeader
       );
     });
     Socket.on(EVENTS.record_finished, async () => {
       Logger.printInfo(
-        this.log_header,
+        this.logHeader,
         `Your video record saved successfully in ${this.path}`
       );
-      this.output_stream?.close();
+      this.outputStream?.close();
       this.ready = false;
       await Socket.closeConnection();
     });
@@ -93,13 +95,13 @@ ${current_date.s}.mp4`;
 
   public async awaitForSocketReady() {
     try {
-      if (this.activated) {
+      if (this.isActivated) {
         Logger.printInfo(
-          this.log_header,
+          this.logHeader,
           "Awaiting for 1 minute while client connect."
         );
         await timeoutWhileCondition(() => this.ready, 60000);
-        Logger.printInfo(this.log_header, "Ready to start.");
+        Logger.printInfo(this.logHeader, "Ready to start.");
       }
       return Promise.resolve();
     } catch (err) {
@@ -113,17 +115,17 @@ ${current_date.s}.mp4`;
     return new Promise<void>((resolve, reject) => {
       if (this.checkAvailable()) {
         Logger.printInfo(
-          this.log_header,
+          this.logHeader,
           "Choose stream for browser. (waiting for 1 minute...)"
         );
         Socket.send(EVENTS.record_choose_stream);
         Socket.on(
           EVENTS.record_stream_choosed,
-          () => (this.is_stream_choosed = true)
+          () => (this.isStreamChosen = true)
         );
-        timeoutWhileCondition(() => this.is_stream_choosed, 60000)
+        timeoutWhileCondition(() => this.isStreamChosen, 60000)
           .then(() => {
-            Logger.printInfo(this.log_header, "Stream choosed");
+            Logger.printInfo(this.logHeader, "Stream choosed");
             resolve();
           })
           .catch((err) => reject(err));
@@ -136,20 +138,20 @@ ${current_date.s}.mp4`;
       try {
         if (!this.checkAvailable()) resolve();
         else {
-          if (!this.output_stream) {
+          if (!this.outputStream) {
             Events.emitCheckable(
               EVENTS.exit,
               "Coudn't start record: output stream is not open!",
-              this.log_header
+              this.logHeader
             );
           } else {
             Socket.send(EVENTS.record_start);
-            Logger.printInfo(this.log_header, "Started recording...");
+            Logger.printInfo(this.logHeader, "Started recording...");
           }
           resolve();
         }
       } catch (err) {
-        Events.emitCheckable(EVENTS.exit, String(err), this.log_header);
+        Events.emitCheckable(EVENTS.exit, String(err), this.logHeader);
       }
     });
   }
@@ -158,10 +160,10 @@ ${current_date.s}.mp4`;
     return new Promise<void>((resolve, reject) => {
       if (!this.checkAvailable()) resolve();
       else {
-        if (!this.output_stream) {
+        if (!this.outputStream) {
           reject(new Error("Coudn't stop record: output stream is not open!"));
         } else {
-          if (!this.is_stream_choosed) {
+          if (!this.isStreamChosen) {
             resolve();
           } else {
             Socket.send(EVENTS.record_stop);
@@ -179,7 +181,7 @@ ${current_date.s}.mp4`;
    * @returns boolean or error.
    */
   private checkAvailable(): boolean | never {
-    if (!this.activated || !Socket.isConnected() || !this.ready) return false;
+    if (!this.isActivated || !Socket.isConnected() || !this.ready) return false;
     return true;
   }
 }
