@@ -5,23 +5,22 @@
 
 # Documentation Content
 
-1. [What it does?][#what-it-does]
-    1) [Demo][#demo]
-2. [Requirements][#requirements]
-3. [Supported Systems][#supported-systems]
-4. [Usage][#usage]
-    1) [Installation][#installation]
-    2) [Configuration][#configuration]
-        1) [Explanation of variables][#explanation-of-variables]
-        2) [Configuration by arguments][#configuration-by-arguments]
-    3) [Run][#run]
-    4) [Record calls][#record-calls]
-5. [FAQ][#faq]
-    1) [How to get path for USER_DATA_DIR?][#how-to-get-path-for-user_data_dir]
-    2) [Why does webdriver of visitor use minimized option instead of headless?][#why-does-webdriver-of-visitor-use-minimized-option-instead-of-headless]
-    3) [How to fix "Failed to start: unknown error: Chrome failed to start: exited normally."?][#how-to-fix-failed-to-start-unknown-error-chrome-failed-to-start-exited-normally]
-6. [Contribution][#contribution]
-7. [License][#license]
+1. [What it does?](#what-it-does)
+    1) [Demo](#demo)
+2. [Requirements](#requirements)
+3. [Supported Systems](#supported-systems)
+4. [Usage](#usage)
+    1) [Installation](#installation)
+    3) [Configuration](#configuration)
+        1) [Explanation of variables](#explanation-of-variables)
+        2) [Configuration by CLI arguments](#configuration-by-cli-arguments)
+    4) [Run](#run)
+5. [FAQ](#faq)
+    1) [How to get path for USER_DATA_DIR?](#how-to-get-path-for-user_data_dir)
+    2) [Why does webdriver of visitor use minimized option instead of headless?](#why-does-webdriver-of-visitor-use-minimized-option-instead-of-headless)
+    3) [How to fix "Failed to start: unknown error: Chrome failed to start: exited normally."?](#how-to-fix-failed-to-start-unknown-error-chrome-failed-to-start-exited-normally)
+6. [Contribution](#contribution)
+7. [License](#license)
 
 # What it does
 
